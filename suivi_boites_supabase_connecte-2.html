@@ -1,0 +1,558 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#111827">
+<title>Suivi des boîtes</title>
+<style>
+:root{--bg:#f5f7fb;--surface:#fff;--surface2:#eef2f7;--text:#101828;--muted:#667085;--border:#e4e7ec;--primary:#111827;--contrast:#fff;--success:#067647;--successbg:#ecfdf3;--warn:#b54708;--warnbg:#fffaeb;--danger:#b42318;--dangerbg:#fef3f2;--info:#175cd3;--infobg:#eff8ff;--shadow:0 14px 38px rgba(16,24,40,.08)}
+body.dark{--bg:#0b1220;--surface:#101828;--surface2:#172033;--text:#f8fafc;--muted:#98a2b3;--border:#263247;--primary:#f8fafc;--contrast:#101828;--shadow:0 14px 38px rgba(0,0,0,.25)}
+*{box-sizing:border-box}html,body{margin:0;background:var(--bg);color:var(--text);font-family:Inter,system-ui,-apple-system,"Segoe UI",sans-serif}body{min-height:100vh}
+button,input,select,textarea{font:inherit}button{cursor:pointer}h1,h2,h3,h4,p{margin:0}.hidden{display:none!important}
+.app{max-width:1050px;margin:auto;padding:14px 14px 108px}.topbar,.section-head,.dialog-head,.dialog-actions,.row{display:flex;align-items:center;justify-content:space-between;gap:12px}.topbar{padding:8px 2px 18px}
+.eyebrow{font-size:.72rem;text-transform:uppercase;letter-spacing:.13em;font-weight:900;color:var(--muted);margin-bottom:5px}h1{font-size:1.25rem}h2{font-size:clamp(1.7rem,6vw,3rem);line-height:1.06}
+.user-chip{display:flex;align-items:center;gap:9px;background:var(--surface);border:1px solid var(--border);border-radius:999px;padding:7px 10px;box-shadow:var(--shadow)}.avatar{width:31px;height:31px;border-radius:50%;display:grid;place-items:center;background:var(--primary);color:var(--contrast);font-weight:900}.user-chip small{display:block;color:var(--muted);font-size:.68rem}
+.hero{display:flex;justify-content:space-between;gap:18px;align-items:flex-end;background:linear-gradient(135deg,#111827,#344054);color:#fff;border-radius:28px;padding:26px;box-shadow:var(--shadow)}
+.hero h2{max-width:650px}.hero p{margin-top:10px;color:#d0d5dd;line-height:1.5;max-width:650px}.hero-btn,.primary-btn,.ghost-btn,.danger-btn{border:0;border-radius:14px;padding:12px 15px;font-weight:900}.hero-btn{background:#fff;color:#111827}.primary-btn{background:var(--primary);color:var(--contrast)}.ghost-btn{background:var(--surface2);color:var(--text);border:1px solid var(--border)}.danger-btn{background:var(--dangerbg);color:var(--danger)}
+.primary-btn:disabled,.hero-btn:disabled{opacity:.55;cursor:not-allowed}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin:18px 0}.stats article{background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:17px;box-shadow:var(--shadow)}.stats span{font-size:.8rem;color:var(--muted);font-weight:800}.stats strong{display:block;font-size:1.8rem;margin-top:6px}.stats .warning{background:var(--warnbg)}.stats .danger{background:var(--dangerbg)}
+.alert-box{background:var(--warnbg);border:1px solid #fedf89;color:#93370d;padding:14px 16px;border-radius:16px;margin-bottom:16px;font-weight:800}
+.notif-panel{display:flex;justify-content:space-between;align-items:center;gap:16px;background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:16px 18px;margin-bottom:18px;box-shadow:var(--shadow)}.notif-panel p{color:var(--muted);font-size:.86rem;line-height:1.45}.notif-actions{display:flex;gap:8px;flex-wrap:wrap}
+.toolbar{display:grid;grid-template-columns:1fr 180px 180px 180px;gap:10px;margin-bottom:22px}input,select,textarea{width:100%;background:var(--surface);color:var(--text);border:1px solid var(--border);border-radius:14px;padding:13px 14px;outline:none}input:focus,select:focus,textarea:focus{border-color:#98a2b3;box-shadow:0 0 0 4px rgba(152,162,179,.12)}
+.section-head{margin-bottom:12px}.pill{background:var(--surface2);padding:8px 10px;border-radius:999px;color:var(--muted);font-size:.8rem;font-weight:900}
+.cards{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}.city-header{grid-column:1/-1;font-size:.72rem;text-transform:uppercase;letter-spacing:.12em;font-weight:900;color:var(--muted);padding:14px 4px 2px;border-top:1px solid var(--border);margin-top:4px}.city-header:first-child{border-top:0;margin-top:0;padding-top:0}.card{background:var(--surface);border:1px solid var(--border);border-radius:22px;padding:18px;box-shadow:var(--shadow)}.card.overdue{border-color:#f79009}.card-top{display:flex;justify-content:space-between;gap:12px;align-items:flex-start}.card h4{font-size:1.03rem;margin-bottom:6px}.address,.meta{color:var(--muted);font-size:.85rem;line-height:1.45}.meta{margin-top:10px}
+.badge{padding:8px 10px;border-radius:999px;font-size:.73rem;font-weight:900;white-space:nowrap}.deposee{background:var(--successbg);color:var(--success)}.volee,.perdue{background:var(--dangerbg);color:var(--danger)}.remplacer{background:var(--warnbg);color:var(--warn)}.recuperee,.aucune{background:var(--surface2);color:var(--muted)}
+.manager{display:inline-flex;margin-top:10px;padding:6px 9px;border-radius:999px;background:var(--surface2);font-size:.74rem;font-weight:900;color:var(--muted)}.due-chip,.ok-chip{display:inline-flex;margin-top:9px;padding:6px 9px;border-radius:999px;font-size:.74rem;font-weight:900}.due-chip{background:var(--warnbg);color:var(--warn)}.ok-chip{background:var(--successbg);color:var(--success)}
+.card-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:14px}.card-actions button,.card-actions a{border:1px solid var(--border);background:var(--surface2);color:var(--text);border-radius:12px;padding:10px;text-align:center;text-decoration:none;font-size:.8rem;font-weight:900}.visit-btn{grid-column:1/-1;background:var(--primary)!important;color:var(--contrast)!important}.maps-btn{background:var(--infobg)!important;color:var(--info)!important;border-color:#b2ddff!important}.delete-card-btn{grid-column:1/-1;background:var(--dangerbg)!important;color:var(--danger)!important;border-color:#fecdca!important}
+.bottom-nav{position:fixed;left:50%;bottom:14px;transform:translateX(-50%);width:min(94%,650px);display:grid;grid-template-columns:repeat(4,1fr);background:rgba(16,24,40,.96);border-radius:22px;padding:8px;box-shadow:0 18px 45px rgba(16,24,40,.3);z-index:20}.bottom-nav button{border:0;background:transparent;color:#98a2b3;padding:9px 4px;border-radius:14px}.bottom-nav span{display:block;font-size:.64rem;margin-top:3px;font-weight:800}.bottom-nav .active{background:#fff;color:#101828}
+.settings{display:grid;gap:14px}.settings-card{background:var(--surface);border:1px solid var(--border);border-radius:22px;padding:18px;box-shadow:var(--shadow)}.settings-card h3{margin-bottom:5px}.settings-card>p{color:var(--muted);font-size:.86rem;line-height:1.5;margin-bottom:14px}.user-list{display:grid;gap:9px}.user-row{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:12px;background:var(--surface2);border-radius:14px}.user-row small{color:var(--muted);display:block;margin-top:3px}.role{font-size:.7rem;padding:5px 8px;border-radius:999px;background:var(--surface);font-weight:900}
+.setting-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}.setting-grid label,.form label{display:block;font-size:.81rem;font-weight:900}.setting-grid input,.setting-grid select,.form input,.form select,.form textarea{margin-top:7px}.warning-note{background:var(--warnbg);color:var(--warn);padding:12px 14px;border-radius:14px;font-size:.83rem;font-weight:800;line-height:1.45}.info-note{background:var(--infobg);color:var(--info);padding:12px 14px;border-radius:14px;font-size:.83rem;font-weight:800;line-height:1.45}
+.auth-screen{min-height:100vh;display:grid;place-items:center;padding:18px;background:radial-gradient(circle at top,#1f2937 0,#111827 35%,#0b1220 100%)}.auth-card{width:min(94vw,480px);background:rgba(255,255,255,.98);color:#101828;border-radius:30px;padding:26px;box-shadow:0 30px 80px rgba(0,0,0,.35)}.auth-logo{width:56px;height:56px;border-radius:18px;background:#111827;color:#fff;display:grid;place-items:center;font-size:1.5rem;font-weight:900;margin-bottom:18px}.auth-card h2{font-size:2rem;margin-bottom:8px}.auth-card p{color:#667085;line-height:1.5;margin-bottom:18px}.auth-card label{display:block;font-size:.82rem;font-weight:900;margin-top:12px}.auth-card input,.auth-card select{margin-top:7px;background:#fff;color:#101828}.auth-card .primary-btn{width:100%;margin-top:18px;background:#111827;color:#fff}.auth-tabs{display:grid;grid-template-columns:1fr 1fr;background:#f2f4f7;padding:4px;border-radius:14px;margin-bottom:18px}.auth-tabs button{border:0;background:transparent;border-radius:10px;padding:10px;font-weight:900;color:#667085}.auth-tabs button.active{background:#fff;color:#101828;box-shadow:0 2px 8px rgba(16,24,40,.08)}.auth-error{color:var(--danger);font-size:.82rem;font-weight:800;margin-top:10px}
+dialog{width:min(92vw,630px);border:0;border-radius:25px;padding:0;background:var(--surface);color:var(--text);box-shadow:0 30px 80px rgba(0,0,0,.28)}dialog::backdrop{background:rgba(2,6,23,.55);backdrop-filter:blur(4px)}.dialog-body{padding:22px}.icon-btn{width:44px;height:44px;border-radius:14px;border:1px solid var(--border);background:var(--surface);color:var(--text)}.form label{margin-top:13px}.two-cols{display:grid;grid-template-columns:1fr 1fr;gap:10px}.dialog-actions{margin-top:20px}.empty{text-align:center;padding:45px 20px;border:1px dashed var(--border);border-radius:20px;color:var(--muted);background:var(--surface);grid-column:1/-1}
+@media(max-width:760px){.hero{flex-direction:column;align-items:stretch}.stats{grid-template-columns:repeat(2,1fr)}.toolbar{grid-template-columns:1fr 1fr}.toolbar input{grid-column:1/-1}.cards{grid-template-columns:1fr}.setting-grid,.two-cols{grid-template-columns:1fr}.user-chip .user-text{display:none}.notif-panel{flex-direction:column;align-items:stretch}.notif-actions{display:grid;grid-template-columns:1fr 1fr}}
+</style>
+</head>
+<body>
+
+<section id="authScreen" class="auth-screen">
+  <div class="auth-card">
+    <div class="auth-logo">SB</div>
+    <div id="authTabs" class="auth-tabs hidden">
+      <button id="tabLogin" class="active">Connexion</button>
+      <button id="tabRegister">Créer un compte</button>
+    </div>
+
+    <div id="firstAdmin">
+      <div class="eyebrow">Premier lancement</div>
+      <h2>Créer le compte administrateur</h2>
+      <p>Ce premier compte pourra ensuite créer les autres gestionnaires et attribuer les boîtes.</p>
+      <label>Nom affiché<input id="adminName" placeholder="Ex : Abou"></label>
+      <label>Email<input id="adminEmail" type="email" placeholder="Ex : abou@exemple.com"></label>
+      <label>Mot de passe<input id="adminPassword" type="password" placeholder="6 caractères minimum"></label>
+      <button id="createAdmin" class="primary-btn">Créer le compte et entrer</button>
+      <div id="firstAdminError" class="auth-error hidden"></div>
+    </div>
+
+    <div id="loginPane" class="hidden">
+      <div class="eyebrow">Bienvenue</div>
+      <h2>Connexion</h2>
+      <p>Connecte-toi pour retrouver les boîtes de l'équipe, synchronisées en temps réel.</p>
+      <label>Email<input id="loginEmail" type="email"></label>
+      <label>Mot de passe<input id="loginPassword" type="password"></label>
+      <button id="loginBtn" class="primary-btn">Se connecter</button>
+      <div id="loginError" class="auth-error hidden"></div>
+    </div>
+
+    <div id="registerPane" class="hidden">
+      <div class="eyebrow">Nouveau gestionnaire</div>
+      <h2>Créer un compte</h2>
+      <p>Un nouveau gestionnaire peut créer son compte ici. Il sera gestionnaire par défaut.</p>
+      <label>Nom affiché<input id="regName"></label>
+      <label>Email<input id="regEmail" type="email"></label>
+      <label>Mot de passe<input id="regPassword" type="password" placeholder="6 caractères minimum"></label>
+      <button id="registerBtn" class="primary-btn">Créer mon compte</button>
+      <div id="registerError" class="auth-error hidden"></div>
+    </div>
+  </div>
+</section>
+
+<div id="mainApp" class="app hidden">
+<header class="topbar">
+  <div><div class="eyebrow">Gestion d'équipe</div><h1>Suivi des boîtes</h1></div>
+  <button id="userChip" class="user-chip"><span id="avatar" class="avatar">A</span><span class="user-text"><strong id="currentName"></strong><small id="currentRole"></small></span></button>
+</header>
+
+<main>
+<section id="homeView">
+  <section class="hero">
+    <div><div class="eyebrow" style="color:#d0d5dd">Tableau de bord</div><h2>Les boîtes à revoir remontent automatiquement.</h2><p>Une visite enregistre la date, l'heure, l'historique et recalcule automatiquement la prochaine échéance. Synchronisé en temps réel avec toute l'équipe.</p></div>
+    <button id="addBtn" class="hero-btn">+ Ajouter une fiche</button>
+  </section>
+
+  <section class="stats">
+    <article><span>Mes fiches</span><strong id="statTotal">0</strong></article>
+    <article><span>À jour</span><strong id="statOk">0</strong></article>
+    <article class="warning"><span>À revoir</span><strong id="statDue">0</strong></article>
+    <article class="danger"><span>Volées</span><strong id="statStolen">0</strong></article>
+  </section>
+
+  <section id="alertBox" class="alert-box hidden"></section>
+
+  <section class="notif-panel">
+    <div><div class="eyebrow">Notifications</div><h3>Rappels</h3><p id="notifStatus">Notifications non activées.</p></div>
+    <div class="notif-actions"><button id="enableNotifBtn" class="primary-btn">Activer</button><button id="testNotifBtn" class="ghost-btn">Tester</button></div>
+  </section>
+
+  <section class="toolbar">
+    <input id="searchInput" type="search" placeholder="Rechercher un commerce, une ville...">
+    <select id="ownerFilter"><option value="mine">Mes boîtes</option><option value="all">Toutes les boîtes</option><option value="unassigned">Non attribuées</option></select>
+    <select id="statusFilter"><option value="">Tous les statuts</option><option value="deposee">Déposée</option><option value="recuperee">Récupérée</option><option value="volee">Volée</option><option value="perdue">Perdue</option><option value="remplacer">À remplacer</option><option value="aucune">Aucune</option></select>
+    <select id="cityFilter"><option value="">Toutes les villes</option></select>
+  </section>
+
+  <section class="section-head"><div><div class="eyebrow">Fiches commerces</div><h3>Suivi actif</h3></div><span id="countPill" class="pill">0 fiche</span></section>
+  <section id="cards" class="cards"></section>
+</section>
+
+<section id="settingsView" class="settings hidden">
+  <section class="section-head"><div><div class="eyebrow">Configuration</div><h2>Réglages</h2></div><button id="backHome" class="ghost-btn">Retour</button></section>
+
+  <article class="settings-card">
+    <h3>Mon compte</h3><p>Modifier les informations du compte actuellement connecté.</p>
+    <div class="setting-grid">
+      <label>Nom affiché<input id="profileName"></label>
+      <label>Email<input id="profileEmail" disabled></label>
+      <label>Nouveau mot de passe<input id="profilePassword" type="password" placeholder="Laisser vide pour conserver"></label>
+      <label>Rôle<input id="profileRole" disabled></label>
+    </div>
+    <button id="saveProfile" class="primary-btn" style="margin-top:12px">Enregistrer mon profil</button>
+  </article>
+
+  <article id="usersSettings" class="settings-card">
+    <div class="row"><div><h3>Gestionnaires</h3><p style="margin:5px 0 0;color:var(--muted);font-size:.86rem">Créer, modifier et retirer les comptes.</p></div><button id="addUserBtn" class="primary-btn">+ Compte</button></div>
+    <div id="userList" class="user-list" style="margin-top:14px"></div>
+    <div class="info-note" style="margin-top:12px">Retirer un compte ici supprime son accès à l'app et libère ses boîtes. Pour supprimer entièrement le compte de connexion (email/mot de passe), il faut le faire depuis le tableau de bord Supabase (ou une fonction serveur dédiée) — la clé publique utilisée ici ne permet pas de le faire de façon sécurisée.</div>
+  </article>
+
+  <article class="settings-card">
+    <h3>Rappels</h3><p>Définis au bout de combien de jours une fiche doit remonter (réglage partagé par toute l'équipe).</p>
+    <div class="setting-grid">
+      <label>Délai de rappel (jours)<input id="reminderDays" type="number" min="1" max="365"></label>
+      <label>Pré-alerte (jours avant)<input id="preAlertDays" type="number" min="0" max="60"></label>
+    </div>
+    <button id="saveReminders" class="primary-btn" style="margin-top:12px">Enregistrer</button>
+  </article>
+
+  <article class="settings-card">
+    <h3>Affichage</h3><p>Préférences enregistrées sur cet appareil.</p>
+    <div class="setting-grid">
+      <label>Thème<select id="themeSelect"><option value="light">Clair</option><option value="dark">Sombre</option></select></label>
+      <label>Vue par défaut<select id="defaultOwnerView"><option value="mine">Mes boîtes</option><option value="all">Toutes les boîtes</option></select></label>
+    </div>
+    <button id="saveDisplay" class="primary-btn" style="margin-top:12px">Enregistrer</button>
+  </article>
+
+  <article class="settings-card">
+    <h3>Sauvegarde</h3><p>Exporter toutes les fiches, comptes et historiques visibles pour toi.</p>
+    <div class="row" style="justify-content:flex-start;flex-wrap:wrap">
+      <button id="exportBtn" class="ghost-btn">Exporter JSON</button>
+    </div>
+  </article>
+
+  <article class="settings-card">
+    <h3>Multi-téléphones</h3>
+    <p>Les données sont maintenant stockées sur Supabase et synchronisées en temps réel entre tous les téléphones connectés.</p>
+  </article>
+
+  <button id="logoutBtn" class="danger-btn">Se déconnecter</button>
+</section>
+</main>
+
+<nav class="bottom-nav">
+  <button id="navHome" class="active">⌂<span>Accueil</span></button>
+  <button id="navHistory">◷<span>Historique</span></button>
+  <button id="navAlerts">⚑<span>Alertes</span></button>
+  <button id="navSettings">⚙<span>Réglages</span></button>
+</nav>
+</div>
+
+<dialog id="businessDialog"><form id="businessForm" class="dialog-body form">
+<div class="dialog-head"><div><div class="eyebrow">Fiche commerce</div><h3 id="businessTitle">Ajouter</h3></div><button type="button" id="closeBusiness" class="icon-btn">✕</button></div>
+<label>Nom<input id="bName" required></label><label>Adresse<input id="bAddress"></label>
+<div class="two-cols"><label>Ville<input id="bCity"></label><label>Téléphone<input id="bPhone"></label></div>
+<label>Responsable<select id="bOwner"></select></label>
+<label>Statut<select id="bStatus"><option value="deposee">Boîte déposée</option><option value="recuperee">Boîte récupérée</option><option value="volee">Boîte volée</option><option value="perdue">Boîte perdue</option><option value="remplacer">À remplacer</option><option value="aucune">Aucune boîte</option></select></label>
+<label>Notes<textarea id="bNotes" rows="4"></textarea></label>
+<div class="dialog-actions"><button type="button" id="deleteBusiness" class="danger-btn">Supprimer</button><button class="primary-btn">Enregistrer</button></div>
+</form></dialog>
+
+<dialog id="userDialog"><form id="userForm" class="dialog-body form">
+<div class="dialog-head"><div><div class="eyebrow">Gestionnaire</div><h3 id="userDialogTitle">Créer un compte</h3></div><button type="button" id="closeUser" class="icon-btn">✕</button></div>
+<label>Nom affiché<input id="uName" required></label>
+<label>Email<input id="uEmail" type="email" required></label>
+<label>Mot de passe<input id="uPassword" type="password" placeholder="6 caractères minimum (création uniquement)"></label>
+<label>Rôle<select id="uRole"><option value="member">Gestionnaire</option><option value="admin">Administrateur</option></select></label>
+<div class="dialog-actions"><button type="button" id="deleteUser" class="danger-btn">Retirer</button><button class="primary-btn">Enregistrer</button></div>
+</form></dialog>
+
+<dialog id="historyDialog"><div class="dialog-body"><div class="dialog-head"><div><div class="eyebrow">Historique</div><h3 id="historyTitle">Historique</h3></div><button id="closeHistory" class="icon-btn">✕</button></div><div id="historyList" class="user-list" style="margin-top:14px"></div></div></dialog>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script>
+/* =========================================================
+   CONFIGURATION — à remplir avec les infos de ton projet
+   Supabase > Project Settings > API
+   ========================================================= */
+const SUPABASE_URL = "https://utbdqiwnxvkmzqhngwgw.supabase.co";
+const SUPABASE_ANON_KEY = "sb_publishable_aOg2nLYGoznFsIcNGWAjoA_aKF3x4pA";
+
+const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+const THEME_KEY="suivi_theme_v1",OWNERVIEW_KEY="suivi_ownerview_v1",NOTIF_LAST="suivi_notif_last_v1";
+const labels={deposee:"Boîte déposée",recuperee:"Boîte récupérée",volee:"Boîte volée",perdue:"Boîte perdue",remplacer:"À remplacer",aucune:"Aucune boîte"};
+
+let currentUser=null;          // {id, name, role, email}
+let profiles=[];               // toutes les fiches profils
+let businesses=[];             // toutes les fiches commerces
+let settingsRow={reminder_days:30,pre_alert_days:7};
+let editingBusiness=null,editingUser=null;
+let realtimeChannel=null;
+
+function esc(s=""){return String(s).replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[m]))}
+function fmt(iso){return iso?new Intl.DateTimeFormat("fr-FR",{dateStyle:"medium",timeStyle:"short"}).format(new Date(iso)):"Jamais"}
+function daysSince(iso){return iso?Math.floor((Date.now()-new Date(iso))/86400000):99999}
+function due(b){return daysSince(b.last_visit)>=settingsRow.reminder_days}
+function nextDue(b){if(!b.last_visit)return "Dès que possible";const d=new Date(new Date(b.last_visit).getTime()+settingsRow.reminder_days*86400000);return new Intl.DateTimeFormat("fr-FR",{dateStyle:"medium"}).format(d)}
+function isAdmin(){return currentUser?.role==="admin"}
+function profileById(uid){return profiles.find(p=>p.id===uid)}
+function applyTheme(){document.body.classList.toggle("dark",localStorage.getItem(THEME_KEY)==="dark")}
+
+/* ========================= AUTH ========================= */
+async function boot(){
+ applyTheme();
+ const {data:{session}}=await sb.auth.getSession();
+ if(session){await afterAuth(session.user)}else{await setupAuthScreen()}
+ sb.auth.onAuthStateChange((event)=>{if(event==="SIGNED_OUT"){showAuthScreen()}});
+}
+
+async function setupAuthScreen(){
+ const {data:hasProfiles,error}=await sb.rpc("has_profiles");
+ const has=!error&&hasProfiles===true;
+ firstAdmin.classList.toggle("hidden",has);
+ authTabs.classList.toggle("hidden",!has);
+ if(has){loginPane.classList.remove("hidden");registerPane.classList.add("hidden")}
+}
+function showAuthScreen(){
+ currentUser=null;profiles=[];businesses=[];
+ if(realtimeChannel){sb.removeChannel(realtimeChannel);realtimeChannel=null}
+ mainApp.classList.add("hidden");authScreen.classList.remove("hidden");
+ setupAuthScreen();
+}
+tabLogin.onclick=()=>{tabLogin.classList.add("active");tabRegister.classList.remove("active");loginPane.classList.remove("hidden");registerPane.classList.add("hidden")}
+tabRegister.onclick=()=>{tabRegister.classList.add("active");tabLogin.classList.remove("active");registerPane.classList.remove("hidden");loginPane.classList.add("hidden")}
+
+function showErr(el,msg){el.textContent=msg;el.classList.remove("hidden")}
+function hideErr(el){el.classList.add("hidden")}
+
+createAdmin.onclick=async()=>{
+ hideErr(firstAdminError);
+ const name=adminName.value.trim(),email=adminEmail.value.trim(),password=adminPassword.value;
+ if(!name||!email||password.length<6)return showErr(firstAdminError,"Nom, email et mot de passe (6 caractères min.) requis.");
+ createAdmin.disabled=true;
+ const {data,error}=await sb.auth.signUp({email,password});
+ createAdmin.disabled=false;
+ if(error)return showErr(firstAdminError,error.message);
+ if(!data.session)return showErr(firstAdminError,"Compte créé. Si la confirmation par email est activée dans Supabase, confirme ton email puis connecte-toi.");
+ const {error:perr}=await sb.from("profiles").insert({id:data.user.id,name,role:"admin"});
+ if(perr)return showErr(firstAdminError,perr.message);
+ await afterAuth(data.user);
+}
+
+registerBtn.onclick=async()=>{
+ hideErr(registerError);
+ const name=regName.value.trim(),email=regEmail.value.trim(),password=regPassword.value;
+ if(!name||!email||password.length<6)return showErr(registerError,"Nom, email et mot de passe (6 caractères min.) requis.");
+ registerBtn.disabled=true;
+ const {data,error}=await sb.auth.signUp({email,password});
+ registerBtn.disabled=false;
+ if(error)return showErr(registerError,error.message);
+ if(!data.session)return showErr(registerError,"Compte créé. Confirme ton email si demandé, puis connecte-toi.");
+ const {error:perr}=await sb.from("profiles").insert({id:data.user.id,name,role:"member"});
+ if(perr)return showErr(registerError,perr.message);
+ await afterAuth(data.user);
+}
+
+loginBtn.onclick=async()=>{
+ hideErr(loginError);
+ const email=loginEmail.value.trim(),password=loginPassword.value;
+ if(!email||!password)return showErr(loginError,"Email et mot de passe requis.");
+ loginBtn.disabled=true;
+ const {data,error}=await sb.auth.signInWithPassword({email,password});
+ loginBtn.disabled=false;
+ if(error)return showErr(loginError,"Email ou mot de passe incorrect.");
+ loginPassword.value="";
+ await afterAuth(data.user);
+}
+
+async function afterAuth(user){
+ const {data:profile,error}=await sb.from("profiles").select("*").eq("id",user.id).single();
+ if(error||!profile){await sb.auth.signOut();return showAuthScreen()}
+ currentUser={id:profile.id,name:profile.name,role:profile.role,email:user.email};
+ authScreen.classList.add("hidden");mainApp.classList.remove("hidden");
+ currentName.textContent=currentUser.name;
+ currentRole.textContent=currentUser.role==="admin"?"Administrateur":"Gestionnaire";
+ avatar.textContent=currentUser.name.slice(0,1).toUpperCase();
+ ownerFilter.value=localStorage.getItem(OWNERVIEW_KEY)||"mine";
+ await loadAll();
+ subscribeRealtime();
+ showHome();
+ updateNotifStatus();
+ setTimeout(checkAndNotify,800);
+}
+function logout(){sb.auth.signOut()}
+
+/* ===================== CHARGEMENT DONNÉES ===================== */
+async function loadAll(){
+ const [{data:p},{data:b},{data:s}]=await Promise.all([
+  sb.from("profiles").select("*").order("name"),
+  sb.from("businesses").select("*").order("last_visit",{ascending:true,nullsFirst:true}),
+  sb.from("settings").select("*").eq("id",1).single()
+ ]);
+ profiles=p||[];businesses=b||[];
+ if(s)settingsRow=s;
+ render();renderSettings();
+}
+async function loadBusinesses(){
+ const {data}=await sb.from("businesses").select("*");
+ businesses=data||[];render();
+}
+function subscribeRealtime(){
+ if(realtimeChannel)return;
+ realtimeChannel=sb.channel("businesses-live")
+  .on("postgres_changes",{event:"*",schema:"public",table:"businesses"},()=>loadBusinesses())
+  .subscribe();
+}
+
+/* ========================= RENDU ========================= */
+function refreshCityFilter(){
+ const cities=[...new Set(businesses.map(b=>(b.city||"").trim()).filter(Boolean))].sort((a,b)=>a.localeCompare(b,"fr"));
+ const current=cityFilter.value;
+ cityFilter.innerHTML=`<option value="">Toutes les villes</option>`+cities.map(c=>`<option value="${esc(c)}">${esc(c)}</option>`).join("");
+ if(cities.includes(current))cityFilter.value=current;
+}
+function render(){
+ refreshCityFilter();
+ const q=searchInput.value.toLowerCase().trim(),ownerMode=ownerFilter.value,status=statusFilter.value,city=cityFilter.value;
+ let list=[...businesses];
+ if(ownerMode==="mine")list=list.filter(b=>b.owner_id===currentUser.id);
+ if(ownerMode==="unassigned")list=list.filter(b=>!b.owner_id);
+ if(!isAdmin()&&ownerMode==="all")list=list.filter(b=>b.owner_id===currentUser.id);
+ list=list.filter(b=>(`${b.name} ${b.address||""} ${b.city||""}`).toLowerCase().includes(q)&&(!status||b.status===status)&&(!city||b.city===city));
+ list.sort((a,b)=>(a.city||"").localeCompare(b.city||"","fr")||daysSince(b.last_visit)-daysSince(a.last_visit));
+ let lastCityHeader=null,cardsHtml="";
+ if(!list.length){cardsHtml=`<div class="empty">Aucune fiche à afficher.</div>`}
+ else{
+  for(const b of list){
+   const cityLabel=(b.city||"").trim()||"Ville non renseignée";
+   if(!city&&cityLabel!==lastCityHeader){cardsHtml+=`<div class="city-header">${esc(cityLabel)}</div>`;lastCityHeader=cityLabel}
+   const own=profileById(b.owner_id),d=due(b);
+   cardsHtml+=`<article class="card ${d?"overdue":""}"><div class="card-top"><div><h4>${esc(b.name)}</h4><p class="address">${esc(b.address||"")}<br>${esc(b.city||"")}</p></div><span class="badge ${b.status}">${labels[b.status]}</span></div><span class="manager">👤 ${own?esc(own.name):"Non attribuée"}</span><div class="meta">Dernière visite : <strong>${fmt(b.last_visit)}</strong><br>Prochaine échéance : <strong>${nextDue(b)}</strong></div><span class="${d?"due-chip":"ok-chip"}">${d?"⚠ À revoir":"✓ À jour"}</span><div class="card-actions"><button onclick="editB('${b.id}')">Modifier</button><button onclick="historyB('${b.id}')">Historique</button><a class="maps-btn" target="_blank" rel="noopener" href="https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent((b.address||"")+", "+(b.city||""))}">📍 Itinéraire Maps</a><button onclick="statusB('${b.id}')">Statut boîte</button><button class="delete-card-btn" onclick="deleteB('${b.id}')">🗑 Supprimer la fiche</button><button class="visit-btn" onclick="visitB('${b.id}')">✓ Visite effectuée maintenant</button></div></article>`;
+  }
+ }
+ cards.innerHTML=cardsHtml;
+ const mine=businesses.filter(b=>b.owner_id===currentUser.id),base=isAdmin()&&ownerMode==="all"?businesses:mine,dueCount=base.filter(due).length;
+ statTotal.textContent=base.length;statDue.textContent=dueCount;statOk.textContent=base.filter(b=>!due(b)).length;statStolen.textContent=base.filter(b=>b.status==="volee").length;countPill.textContent=`${list.length} fiche${list.length>1?"s":""}`;
+ alertBox.classList.toggle("hidden",dueCount===0);if(dueCount)alertBox.textContent=`⚠ ${dueCount} commerce${dueCount>1?"s":""} à revoir maintenant.`;
+}
+
+async function addHist(businessId,label,details=""){
+ await sb.from("history").insert({business_id:businessId,user_id:currentUser.id,label,details});
+}
+
+window.visitB=async bid=>{
+ const b=businesses.find(x=>x.id===bid);if(!b)return;
+ if(!isAdmin()&&b.owner_id!==currentUser.id)return alert("Cette boîte ne t'est pas attribuée.");
+ const nowIso=new Date().toISOString();
+ const {error}=await sb.from("businesses").update({last_visit:nowIso}).eq("id",bid);
+ if(error)return alert(error.message);
+ await addHist(bid,"Visite effectuée","Date et heure enregistrées automatiquement.");
+ await loadBusinesses();
+}
+window.statusB=async bid=>{
+ const b=businesses.find(x=>x.id===bid);if(!b)return;
+ if(!isAdmin()&&b.owner_id!==currentUser.id)return alert("Cette boîte ne t'est pas attribuée.");
+ const v=prompt("1 Déposée\n2 Récupérée\n3 Volée\n4 Perdue\n5 À remplacer\n6 Aucune");
+ const map={1:"deposee",2:"recuperee",3:"volee",4:"perdue",5:"remplacer",6:"aucune"};
+ if(!map[v])return;
+ const {error}=await sb.from("businesses").update({status:map[v]}).eq("id",bid);
+ if(error)return alert(error.message);
+ await addHist(bid,labels[map[v]],"Statut modifié.");
+ await loadBusinesses();
+}
+window.deleteB=async bid=>{
+ const b=businesses.find(x=>x.id===bid);if(!b)return;
+ if(!isAdmin()&&b.owner_id!==currentUser.id)return alert("Cette fiche ne t'est pas attribuée.");
+ if(!confirm(`Supprimer définitivement la fiche "${b.name}" ?\n\nCette action supprimera aussi son historique.`))return;
+ const {error}=await sb.from("businesses").delete().eq("id",bid);
+ if(error)return alert(error.message);
+ await loadBusinesses();
+}
+window.editB=bid=>{
+ const b=businesses.find(x=>x.id===bid);if(!b)return;
+ if(!isAdmin()&&b.owner_id!==currentUser.id)return alert("Cette boîte ne t'est pas attribuée.");
+ editingBusiness=bid;fillOwners();
+ bName.value=b.name;bAddress.value=b.address||"";bCity.value=b.city||"";bPhone.value=b.phone||"";bOwner.value=b.owner_id||"";bStatus.value=b.status;bNotes.value=b.notes||"";
+ businessTitle.textContent="Modifier la fiche";deleteBusiness.style.display="inline-block";businessDialog.showModal();
+}
+window.historyB=async bid=>{
+ const b=businesses.find(x=>x.id===bid);
+ historyTitle.textContent=b?b.name:"Historique";
+ const {data:items}=await sb.from("history").select("*").eq("business_id",bid).order("at",{ascending:false});
+ historyList.innerHTML=(items&&items.length)?items.map(h=>{const u=profileById(h.user_id);return `<div class="user-row"><div><strong>${esc(h.label)}</strong><small>${fmt(h.at)} · ${u?esc(u.name):"Utilisateur"}</small><div class="meta">${esc(h.details||"")}</div></div></div>`}).join(""):`<div class="empty">Aucun historique.</div>`;
+ historyDialog.showModal();
+}
+function fillOwners(){bOwner.innerHTML=`<option value="">Non attribuée</option>`+profiles.map(p=>`<option value="${p.id}">${esc(p.name)}</option>`).join("")}
+addBtn.onclick=()=>{editingBusiness=null;businessForm.reset();fillOwners();if(!isAdmin())bOwner.value=currentUser.id;businessTitle.textContent="Ajouter une fiche";deleteBusiness.style.display="none";businessDialog.showModal()}
+
+businessForm.onsubmit=async e=>{
+ e.preventDefault();
+ const old=editingBusiness?businesses.find(x=>x.id===editingBusiness):null;
+ const obj={name:bName.value.trim(),address:bAddress.value.trim(),city:bCity.value.trim(),phone:bPhone.value.trim(),owner_id:bOwner.value||null,status:bStatus.value,notes:bNotes.value.trim()};
+ if(!isAdmin())obj.owner_id=currentUser.id;
+ if(old){
+  const {error}=await sb.from("businesses").update(obj).eq("id",old.id);
+  if(error)return alert(error.message);
+  if(old.owner_id!==obj.owner_id)await addHist(old.id,"Responsable modifié",`Nouveau responsable : ${profileById(obj.owner_id)?.name||"Aucun"}`);
+  if(old.status!==obj.status)await addHist(old.id,labels[obj.status],"Statut modifié depuis la fiche.");
+ }else{
+  obj.created_by=currentUser.id;
+  const {data,error}=await sb.from("businesses").insert(obj).select().single();
+  if(error)return alert(error.message);
+  await addHist(data.id,"Fiche créée","Nouvelle fiche ajoutée.");
+ }
+ businessDialog.close();await loadBusinesses();
+}
+deleteBusiness.onclick=async()=>{
+ if(!editingBusiness)return;
+ if(!confirm("Supprimer cette fiche ?"))return;
+ const {error}=await sb.from("businesses").delete().eq("id",editingBusiness);
+ if(error)return alert(error.message);
+ businessDialog.close();await loadBusinesses();
+}
+closeBusiness.onclick=()=>businessDialog.close();closeHistory.onclick=()=>historyDialog.close();
+
+/* ===================== RÉGLAGES / COMPTES ===================== */
+function renderSettings(){
+ profileName.value=currentUser.name;profileEmail.value=currentUser.email;
+ profileRole.value=currentUser.role==="admin"?"Administrateur":"Gestionnaire";profilePassword.value="";
+ reminderDays.value=settingsRow.reminder_days;preAlertDays.value=settingsRow.pre_alert_days;
+ themeSelect.value=localStorage.getItem(THEME_KEY)||"light";
+ defaultOwnerView.value=localStorage.getItem(OWNERVIEW_KEY)||"mine";
+ usersSettings.classList.toggle("hidden",!isAdmin());
+ userList.innerHTML=profiles.map(p=>`<div class="user-row"><div><strong>${esc(p.name)}</strong><small>${businesses.filter(b=>b.owner_id===p.id).length} boîte(s)</small></div><div><span class="role">${p.role==="admin"?"Admin":"Gestionnaire"}</span> ${isAdmin()?`<button class="ghost-btn" onclick="editU('${p.id}')">Modifier</button>`:""}</div></div>`).join("");
+}
+saveProfile.onclick=async()=>{
+ const n=profileName.value.trim();if(!n)return;
+ const {error}=await sb.from("profiles").update({name:n}).eq("id",currentUser.id);
+ if(error)return alert(error.message);
+ if(profilePassword.value){
+  if(profilePassword.value.length<6)return alert("Mot de passe : 6 caractères minimum.");
+  const {error:perr}=await sb.auth.updateUser({password:profilePassword.value});
+  if(perr)return alert(perr.message);
+ }
+ currentUser.name=n;currentName.textContent=n;avatar.textContent=n.slice(0,1).toUpperCase();
+ await loadAll();alert("Profil enregistré.");
+}
+saveReminders.onclick=async()=>{
+ if(!isAdmin())return alert("Réservé aux administrateurs.");
+ const reminder_days=Math.max(1,+reminderDays.value||30),pre_alert_days=Math.max(0,+preAlertDays.value||7);
+ const {error}=await sb.from("settings").update({reminder_days,pre_alert_days}).eq("id",1);
+ if(error)return alert(error.message);
+ settingsRow={reminder_days,pre_alert_days};render();alert("Réglages enregistrés.");
+}
+saveDisplay.onclick=()=>{
+ localStorage.setItem(THEME_KEY,themeSelect.value);
+ localStorage.setItem(OWNERVIEW_KEY,defaultOwnerView.value);
+ applyTheme();ownerFilter.value=defaultOwnerView.value;render();alert("Affichage enregistré.");
+}
+window.editU=uid=>{
+ if(!isAdmin())return;
+ const p=profileById(uid);editingUser=uid;
+ uName.value=p.name;uEmail.value="";uEmail.disabled=true;uPassword.value="";uPassword.placeholder="Non modifiable ici";uPassword.disabled=true;uRole.value=p.role;
+ userDialogTitle.textContent="Modifier le compte";deleteUser.style.display=p.id===currentUser.id?"none":"inline-block";
+ userDialog.showModal();
+}
+addUserBtn.onclick=()=>{
+ editingUser=null;userForm.reset();uEmail.disabled=false;uPassword.disabled=false;uPassword.placeholder="6 caractères minimum (création uniquement)";
+ userDialogTitle.textContent="Créer un compte";deleteUser.style.display="none";userDialog.showModal();
+}
+userForm.onsubmit=async e=>{
+ e.preventDefault();if(!isAdmin())return;
+ const name=uName.value.trim();
+ if(!name)return alert("Nom requis.");
+ if(editingUser){
+  const {error}=await sb.from("profiles").update({name,role:uRole.value}).eq("id",editingUser);
+  if(error)return alert(error.message);
+ }else{
+  const email=uEmail.value.trim(),password=uPassword.value;
+  if(!email||password.length<6)return alert("Email et mot de passe (6 caractères min.) requis.");
+  // Client Supabase temporaire : évite d'écraser la session de l'admin connecté
+  const tempClient=supabase.createClient(SUPABASE_URL,SUPABASE_ANON_KEY,{auth:{persistSession:false,autoRefreshToken:false}});
+  const {data,error}=await tempClient.auth.signUp({email,password});
+  if(error)return alert(error.message);
+  if(!data.user)return alert("Compte créé, mais confirmation email requise avant de pouvoir se connecter.");
+  const {error:perr}=await sb.from("profiles").insert({id:data.user.id,name,role:uRole.value});
+  if(perr)return alert(perr.message);
+ }
+ userDialog.close();await loadAll();
+}
+deleteUser.onclick=async()=>{
+ if(!editingUser||editingUser===currentUser.id)return;
+ if(!confirm("Retirer ce compte ? Les boîtes deviendront non attribuées. Le compte de connexion (email/mot de passe) devra être supprimé depuis Supabase."))return;
+ const {error}=await sb.from("profiles").delete().eq("id",editingUser);
+ if(error)return alert(error.message);
+ userDialog.close();await loadAll();
+}
+closeUser.onclick=()=>userDialog.close();
+
+exportBtn.onclick=async()=>{
+ const {data:hist}=await sb.from("history").select("*");
+ const payload={exportedAt:new Date().toISOString(),profiles,businesses,history:hist||[],settings:settingsRow};
+ const blob=new Blob([JSON.stringify(payload,null,2)],{type:"application/json"}),a=document.createElement("a");
+ a.href=URL.createObjectURL(blob);a.download=`suivi-boites-${new Date().toISOString().slice(0,10)}.json`;a.click();URL.revokeObjectURL(a.href);
+}
+
+/* ===================== NAVIGATION ===================== */
+function showHome(){homeView.classList.remove("hidden");settingsView.classList.add("hidden");navHome.classList.add("active");navSettings.classList.remove("active")}
+function showSettings(){homeView.classList.add("hidden");settingsView.classList.remove("hidden");navHome.classList.remove("active");navSettings.classList.add("active");renderSettings()}
+navHome.onclick=showHome;navSettings.onclick=showSettings;userChip.onclick=showSettings;backHome.onclick=showHome;logoutBtn.onclick=logout;
+navAlerts.onclick=()=>{showHome();ownerFilter.value="mine";statusFilter.value="";render();alert(`${businesses.filter(b=>b.owner_id===currentUser.id&&due(b)).length} de tes fiches sont à revoir.`)}
+navHistory.onclick=async()=>{
+ const {data:hist}=await sb.from("history").select("*").order("at",{ascending:false}).limit(200);
+ const items=(hist||[]).filter(h=>{const b=businesses.find(x=>x.id===h.business_id);return isAdmin()||(b&&b.owner_id===currentUser.id)});
+ historyTitle.textContent="Historique général";
+ historyList.innerHTML=items.length?items.map(h=>{const b=businesses.find(x=>x.id===h.business_id);return `<div class="user-row"><div><strong>${esc(b?b.name:"?")} · ${esc(h.label)}</strong><small>${fmt(h.at)} · ${esc(profileById(h.user_id)?.name||"Utilisateur")}</small></div></div>`}).join(""):`<div class="empty">Aucun historique.</div>`;
+ historyDialog.showModal();
+}
+searchInput.oninput=render;ownerFilter.onchange=render;statusFilter.onchange=render;cityFilter.onchange=render;
+
+/* ===================== NOTIFICATIONS ===================== */
+function notifSupported(){return "Notification" in window}
+function updateNotifStatus(){if(!notifSupported()){notifStatus.textContent="Notifications système non disponibles dans ce mode.";enableNotifBtn.disabled=true;return}notifStatus.textContent=Notification.permission==="granted"?"Notifications activées.":"Active les notifications pour être averti des fiches à revoir."}
+enableNotifBtn.onclick=async()=>{if(!notifSupported())return;const p=await Notification.requestPermission();updateNotifStatus();if(p==="granted"){new Notification("Suivi des boîtes",{body:"Notifications activées."});checkAndNotify(true)}}
+testNotifBtn.onclick=async()=>{if(!notifSupported())return alert("Notifications indisponibles.");if(Notification.permission!=="granted")await Notification.requestPermission();if(Notification.permission==="granted")new Notification("Test — Suivi des boîtes",{body:"La notification fonctionne."})}
+function checkAndNotify(force=false){
+ if(!currentUser||!notifSupported()||Notification.permission!=="granted")return;
+ const dueList=businesses.filter(b=>(isAdmin()||b.owner_id===currentUser.id)&&due(b));
+ if(!dueList.length)return;
+ const key=new Date().toISOString().slice(0,10)+"-"+currentUser.id;
+ if(!force&&localStorage.getItem(NOTIF_LAST)===key)return;
+ new Notification(`⚠ ${dueList.length} fiche${dueList.length>1?"s":""} à revoir`,{body:`${dueList.slice(0,3).map(b=>b.name).join(", ")}${dueList.length>3?"…":""}`});
+ localStorage.setItem(NOTIF_LAST,key);
+}
+setInterval(()=>checkAndNotify(false),3600000);
+
+boot();
+</script>
+</body></html>
