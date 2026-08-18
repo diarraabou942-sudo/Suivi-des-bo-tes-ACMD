@@ -231,6 +231,15 @@ function nextDue(b){if(!b.last_visit)return "Dès que possible";const d=new Date
 function isAdmin(){return currentUser?.role==="admin"}
 function profileById(uid){return profiles.find(p=>p.id===uid)}
 function applyTheme(){document.body.classList.toggle("dark",localStorage.getItem(THEME_KEY)==="dark")}
+function inferredCity(b){
+ const direct=String(b?.city||"").trim();
+ if(direct)return direct;
+ const address=String(b?.address||"").trim();
+ if(!address)return "";
+ const m=address.match(/\b\d{5}\s+(.+)$/);
+ if(m&&m[1])return m[1].trim().replace(/[,.]+$/,"");
+ return "";
+}
 
 /* ========================= AUTH ========================= */
 async function boot(){
@@ -340,7 +349,7 @@ function subscribeRealtime(){
 
 /* ========================= RENDU ========================= */
 function refreshCityFilter(){
- const cities=[...new Set(businesses.map(b=>(b.city||"").trim()).filter(Boolean))].sort((a,b)=>a.localeCompare(b,"fr"));
+ const cities=[...new Set(businesses.map(inferredCity).filter(Boolean))].sort((a,b)=>a.localeCompare(b,"fr"));
  const current=cityFilter.value;
  cityFilter.innerHTML=`<option value="">Toutes les villes</option>`+cities.map(c=>`<option value="${esc(c)}">${esc(c)}</option>`).join("");
  if(cities.includes(current))cityFilter.value=current;
@@ -352,16 +361,16 @@ function render(){
  if(ownerMode==="mine")list=list.filter(b=>b.owner_id===currentUser.id);
  if(ownerMode==="unassigned")list=list.filter(b=>!b.owner_id);
  if(!isAdmin()&&ownerMode==="all")list=list.filter(b=>b.owner_id===currentUser.id);
- list=list.filter(b=>(`${b.name} ${b.address||""} ${b.city||""}`).toLowerCase().includes(q)&&(!status||b.status===status)&&(!city||b.city===city));
- list.sort((a,b)=>(a.city||"").localeCompare(b.city||"","fr")||daysSince(b.last_visit)-daysSince(a.last_visit));
+ list=list.filter(b=>(`${b.name} ${b.address||""} ${inferredCity(b)}`).toLowerCase().includes(q)&&(!status||b.status===status)&&(!city||inferredCity(b)===city));
+ list.sort((a,b)=>inferredCity(a).localeCompare(inferredCity(b),"fr")||daysSince(b.last_visit)-daysSince(a.last_visit));
  let lastCityHeader=null,cardsHtml="";
  if(!list.length){cardsHtml=`<div class="empty">Aucune fiche à afficher.</div>`}
  else{
   for(const b of list){
-   const cityLabel=(b.city||"").trim()||"Ville non renseignée";
+   const cityLabel=inferredCity(b)||"Ville non renseignée";
    if(!city&&cityLabel!==lastCityHeader){cardsHtml+=`<div class="city-header">${esc(cityLabel)}</div>`;lastCityHeader=cityLabel}
    const own=profileById(b.owner_id),d=due(b);
-   cardsHtml+=`<article class="card ${d?"overdue":""}"><div class="card-top"><div><h4>${esc(b.name)}</h4><p class="address">${esc(b.address||"")}<br>${esc(b.city||"")}</p></div><span class="badge ${b.status}">${labels[b.status]}</span></div><span class="manager">👤 ${own?esc(own.name):"Non attribuée"}</span><div class="meta">Dernière visite : <strong>${fmt(b.last_visit)}</strong><br>Prochaine échéance : <strong>${nextDue(b)}</strong></div><span class="${d?"due-chip":"ok-chip"}">${d?"⚠ À revoir":"✓ À jour"}</span><div class="card-actions"><button onclick="editB('${b.id}')">Modifier</button><button onclick="historyB('${b.id}')">Historique</button><a class="maps-btn" target="_blank" rel="noopener" href="https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent((b.address||"")+", "+(b.city||""))}">📍 Itinéraire Maps</a><button onclick="statusB('${b.id}')">Statut boîte</button><button class="delete-card-btn" onclick="deleteB('${b.id}')">🗑 Supprimer la fiche</button><button class="visit-btn" onclick="visitB('${b.id}')">✓ Visite effectuée maintenant</button></div></article>`;
+   cardsHtml+=`<article class="card ${d?"overdue":""}"><div class="card-top"><div><h4>${esc(b.name)}</h4><p class="address">${esc(b.address||"")}<br>${esc(inferredCity(b))}</p></div><span class="badge ${b.status}">${labels[b.status]}</span></div><span class="manager">👤 ${own?esc(own.name):"Non attribuée"}</span><div class="meta">Dernière visite : <strong>${fmt(b.last_visit)}</strong><br>Prochaine échéance : <strong>${nextDue(b)}</strong></div><span class="${d?"due-chip":"ok-chip"}">${d?"⚠ À revoir":"✓ À jour"}</span><div class="card-actions"><button onclick="editB('${b.id}')">Modifier</button><button onclick="historyB('${b.id}')">Historique</button><a class="maps-btn" target="_blank" rel="noopener" href="https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent((b.address||"")+", "+inferredCity(b))}">📍 Itinéraire Maps</a><button onclick="statusB('${b.id}')">Statut boîte</button><button class="delete-card-btn" onclick="deleteB('${b.id}')">🗑 Supprimer la fiche</button><button class="visit-btn" onclick="visitB('${b.id}')">✓ Visite effectuée maintenant</button></div></article>`;
   }
  }
  cards.innerHTML=cardsHtml;
@@ -573,7 +582,13 @@ function importBusinessFromRow(row){
  return {
   name,
   address:String(importVal(row,["adresse","address"])).trim(),
-  city:String(importVal(row,["ville","city","commune"])).trim(),
+  city:(()=>{
+   const explicit=String(importVal(row,["ville","city","commune"])).trim();
+   if(explicit)return explicit;
+   const address=String(importVal(row,["adresse","address"])).trim();
+   const m=address.match(/\b\d{5}\s+(.+)$/);
+   return m&&m[1]?m[1].trim().replace(/[,.]+$/,""):"";
+  })(),
   phone:String(importVal(row,["telephone","téléphone","tel","phone","numero","numéro"])).trim(),
   owner_id:importOwnerId(importVal(row,["responsable","gestionnaire","owner","proprietaire","propriétaire"])),
   status:importStatus(importVal(row,["statut","status","etat","état"])),
