@@ -987,7 +987,7 @@ async function getNotifRegistration(){
  if(notifRegistration)return notifRegistration;
  try{
   const existing=await navigator.serviceWorker.getRegistration("./");
-  notifRegistration=existing||await navigator.serviceWorker.register("./sw.js?v=6").then(()=>navigator.serviceWorker.ready);
+  notifRegistration=existing||await navigator.serviceWorker.register("./sw.js?v=7").then(()=>navigator.serviceWorker.ready);
   return notifRegistration;
  }catch(e){console.error("Service worker:",e);return null}
 }
@@ -1004,17 +1004,49 @@ async function refreshPushStatus(){
  try{
   const reg=await navigator.serviceWorker.ready;
   const sub=await reg.pushManager.getSubscription();
+
   if(Notification.permission==="granted"&&sub){
+   // Répare automatiquement l'abonnement côté Supabase s'il a disparu.
+   await savePushSubscription(sub);
    notifStatus.textContent="Notifications push activées, même lorsque l’application est fermée.";
    enableNotifBtn.disabled=true;
+   enableNotifBtn.textContent="Activé";
+   return;
   }
- }catch(e){console.error("Statut push:",e)}
+
+  if(Notification.permission==="granted"&&!sub){
+   notifStatus.textContent="Notifications autorisées, mais l’abonnement push doit être réactivé.";
+   enableNotifBtn.disabled=false;
+   enableNotifBtn.textContent="Réactiver";
+   return;
+  }
+
+  updateNotifStatus();
+ }catch(e){
+  console.error("Statut push:",e);
+  notifStatus.textContent="Abonnement push à vérifier. Appuie sur Activer.";
+  enableNotifBtn.disabled=false;
+  enableNotifBtn.textContent="Activer";
+ }
 }
 
 function updateNotifStatus(){
- if(!notifSupported()){notifStatus.textContent="Notifications système non disponibles dans ce navigateur.";enableNotifBtn.disabled=true;return}
- enableNotifBtn.disabled=Notification.permission==="granted";
- notifStatus.textContent=Notification.permission==="granted"?"Notifications activées.":Notification.permission==="denied"?"Notifications bloquées. Autorise-les dans les réglages du navigateur pour ce site.":"Active les notifications pour être averti des fiches à revoir.";
+ if(!notifSupported()){
+  notifStatus.textContent="Notifications système non disponibles dans ce navigateur.";
+  enableNotifBtn.disabled=true;
+  return;
+ }
+ if(Notification.permission==="denied"){
+  enableNotifBtn.disabled=true;
+  notifStatus.textContent="Notifications bloquées. Autorise-les dans les réglages du navigateur pour ce site.";
+ }else if(Notification.permission==="granted"){
+  // La permission seule ne garantit pas qu'un abonnement push existe.
+  enableNotifBtn.disabled=false;
+  notifStatus.textContent="Vérification de l’abonnement push…";
+ }else{
+  enableNotifBtn.disabled=false;
+  notifStatus.textContent="Active les notifications pour être averti des fiches à revoir.";
+ }
 }
 
 enableNotifBtn.onclick=async()=>{
@@ -1023,15 +1055,13 @@ enableNotifBtn.onclick=async()=>{
   enableNotifBtn.disabled=true;
   enableNotifBtn.textContent="Activation…";
   await enableWebPush();
-  updateNotifStatus();
-  notifStatus.textContent="Notifications push activées, même lorsque l’application est fermée.";
+  await refreshPushStatus();
   await showSystemNotification("Suivi des boîtes ACMD",{body:"Notifications push activées.",icon:"./icon-192.png",badge:"./icon-192.png",tag:"acmd-push-enabled"});
  }catch(e){
   console.error(e);
   alert(e.message||"Impossible d'activer les notifications push.");
  }finally{
-  enableNotifBtn.textContent="Activer";
-  updateNotifStatus();
+  await refreshPushStatus();
  }
 }
 
@@ -1101,7 +1131,7 @@ installBtn.onclick=async()=>{
 
 if("serviceWorker" in navigator){
  window.addEventListener("load",()=>{
-  navigator.serviceWorker.register("./sw.js?v=6").catch(err=>console.error("PWA service worker:",err));
+  navigator.serviceWorker.register("./sw.js?v=7").catch(err=>console.error("PWA service worker:",err));
  });
 }
 
