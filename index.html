@@ -4,6 +4,11 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#111827">
+<link rel="manifest" href="./manifest.webmanifest">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Suivi ACMD">
+<link rel="apple-touch-icon" href="./icon-192.png">
 <title>Suivi des boîtes</title>
 <style>
 :root{--bg:#f5f7fb;--surface:#fff;--surface2:#eef2f7;--text:#101828;--muted:#667085;--border:#e4e7ec;--primary:#111827;--contrast:#fff;--success:#067647;--successbg:#ecfdf3;--warn:#b54708;--warnbg:#fffaeb;--danger:#b42318;--dangerbg:#fef3f2;--info:#175cd3;--infobg:#eff8ff;--shadow:0 14px 38px rgba(16,24,40,.08)}
@@ -210,6 +215,7 @@ dialog{width:min(92vw,630px);border:0;border-radius:25px;padding:0;background:va
    ========================================================= */
 const SUPABASE_URL = "https://utbdqiwnxvkmzqhngwgw.supabase.co";
 const SUPABASE_ANON_KEY = "sb_publishable_aOg2nLYGoznFsIcNGWAjoA_aKF3x4pA";
+const VAPID_PUBLIC_KEY = "BL37QvdDpJw8E3GOTKaSKvZqkgwx7ReSh6FPV9f_R6Tc0KtRK5sbNlNFdVIqUfclqlPzQUQM7cgPkaaK3c8ifdM";
 
 const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
@@ -321,6 +327,7 @@ async function afterAuth(user){
  subscribeRealtime();
  showHome();
  updateNotifStatus();
+ refreshPushStatus();
  setTimeout(checkAndNotify,800);
 }
 function logout(){sb.auth.signOut()}
@@ -672,6 +679,74 @@ navHistory.onclick=async()=>{
 }
 searchInput.oninput=render;ownerFilter.onchange=render;statusFilter.onchange=render;cityFilter.onchange=render;
 
+
+/* ===================== WEB PUSH ===================== */
+function urlBase64ToUint8Array(base64String){
+ const padding="=".repeat((4-base64String.length%4)%4);
+ const base64=(base64String+padding).replace(/-/g,"+").replace(/_/g,"/");
+ const raw=atob(base64);
+ return Uint8Array.from([...raw].map(c=>c.charCodeAt(0)));
+}
+
+async function savePushSubscription(subscription){
+ if(!currentUser)throw new Error("Utilisateur non connecté.");
+ const json=subscription.toJSON();
+ const row={
+  user_id:currentUser.id,
+  endpoint:json.endpoint,
+  p256dh:json.keys?.p256dh,
+  auth:json.keys?.auth,
+  enabled:true
+ };
+ if(!row.endpoint||!row.p256dh||!row.auth)throw new Error("Abonnement push incomplet.");
+
+ const {data:existing,error:readErr}=await sb
+  .from("push_subscriptions")
+  .select("id")
+  .eq("endpoint",row.endpoint)
+  .maybeSingle();
+ if(readErr)throw readErr;
+
+ if(existing?.id){
+  const {error}=await sb.from("push_subscriptions").update(row).eq("id",existing.id);
+  if(error)throw error;
+ }else{
+  const {error}=await sb.from("push_subscriptions").insert(row);
+  if(error)throw error;
+ }
+}
+
+async function enableWebPush(){
+ if(!("serviceWorker" in navigator)||!("PushManager" in window)||!("Notification" in window)){
+  throw new Error("Les notifications push ne sont pas disponibles sur cet appareil.");
+ }
+ const permission=await Notification.requestPermission();
+ if(permission!=="granted")throw new Error("Autorisation de notifications refusée.");
+
+ const reg=await navigator.serviceWorker.ready;
+ let sub=await reg.pushManager.getSubscription();
+ if(!sub){
+  sub=await reg.pushManager.subscribe({
+   userVisibleOnly:true,
+   applicationServerKey:urlBase64ToUint8Array(VAPID_PUBLIC_KEY)
+  });
+ }
+ await savePushSubscription(sub);
+ return sub;
+}
+
+async function disableWebPush(){
+ if(!("serviceWorker" in navigator))return;
+ const reg=await navigator.serviceWorker.ready;
+ const sub=await reg.pushManager.getSubscription();
+ if(!sub)return;
+ const endpoint=sub.endpoint;
+ await sub.unsubscribe();
+ if(currentUser){
+  await sb.from("push_subscriptions").delete().eq("endpoint",endpoint);
+ }
+}
+
 /* ===================== NOTIFICATIONS ===================== */
 function notifSupported(){return "Notification" in window && "serviceWorker" in navigator}
 
@@ -692,6 +767,19 @@ async function showSystemNotification(title,options={}){
  return reg.showNotification(title,options);
 }
 
+
+async function refreshPushStatus(){
+ if(!notifSupported()||!("PushManager" in window))return;
+ try{
+  const reg=await navigator.serviceWorker.ready;
+  const sub=await reg.pushManager.getSubscription();
+  if(Notification.permission==="granted"&&sub){
+   notifStatus.textContent="Notifications push activées, même lorsque l’application est fermée.";
+   enableNotifBtn.disabled=true;
+  }
+ }catch(e){console.error("Statut push:",e)}
+}
+
 function updateNotifStatus(){
  if(!notifSupported()){notifStatus.textContent="Notifications système non disponibles dans ce navigateur.";enableNotifBtn.disabled=true;testNotifBtn.disabled=true;return}
  enableNotifBtn.disabled=Notification.permission==="granted";
@@ -701,22 +789,43 @@ function updateNotifStatus(){
 enableNotifBtn.onclick=async()=>{
  if(!notifSupported())return alert("Notifications indisponibles sur ce navigateur.");
  try{
-  const p=await Notification.requestPermission();
+  enableNotifBtn.disabled=true;
+  enableNotifBtn.textContent="Activation…";
+  await enableWebPush();
   updateNotifStatus();
-  if(p==="granted"){await showSystemNotification("Suivi des boîtes",{body:"Notifications activées."});await checkAndNotify(true)}
-  else if(p==="denied")alert("Les notifications sont bloquées. Autorise-les dans les réglages du navigateur pour ce site.");
- }catch(e){console.error(e);alert("Impossible d'activer les notifications sur cet appareil.")}
+  notifStatus.textContent="Notifications push activées, même lorsque l’application est fermée.";
+  await showSystemNotification("Suivi des boîtes ACMD",{body:"Notifications push activées.",icon:"./icon-192.png",badge:"./icon-192.png",tag:"acmd-push-enabled"});
+ }catch(e){
+  console.error(e);
+  alert(e.message||"Impossible d'activer les notifications push.");
+ }finally{
+  enableNotifBtn.textContent="Activer";
+  updateNotifStatus();
+ }
 }
 
 testNotifBtn.onclick=async()=>{
  if(!notifSupported())return alert("Notifications indisponibles sur ce navigateur.");
  try{
-  let p=Notification.permission;
-  if(p!=="granted")p=await Notification.requestPermission();
+  const reg=await navigator.serviceWorker.ready;
+  let sub=await reg.pushManager.getSubscription();
+  if(!sub){
+   sub=await enableWebPush();
+  }else{
+   await savePushSubscription(sub);
+  }
   updateNotifStatus();
-  if(p==="granted")await showSystemNotification("Test — Suivi des boîtes",{body:"La notification fonctionne."});
-  else alert("Autorise d'abord les notifications pour ce site.");
- }catch(e){console.error(e);alert("Le test de notification a échoué sur cet appareil.")}
+  await reg.showNotification("Test — Suivi des boîtes ACMD",{
+   body:"La notification fonctionne. Les rappels automatiques pourront arriver même application fermée.",
+   icon:"./icon-192.png",
+   badge:"./icon-192.png",
+   tag:"acmd-test",
+   data:{url:"./"}
+  });
+ }catch(e){
+  console.error(e);
+  alert(e.message||"Le test de notification a échoué.");
+ }
 }
 
 function localDateKey(d=new Date()){return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`}
@@ -735,6 +844,14 @@ async function checkAndNotify(force=false){
 
 getNotifRegistration();
 setInterval(()=>checkAndNotify(false),3600000);
+
+
+/* ===================== PWA / INSTALLATION ===================== */
+if("serviceWorker" in navigator){
+ window.addEventListener("load",()=>{
+  navigator.serviceWorker.register("./sw.js").catch(err=>console.error("PWA service worker:",err));
+ });
+}
 
 boot();
 </script>
