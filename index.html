@@ -154,9 +154,12 @@ dialog{width:min(92vw,630px);border:0;border-radius:25px;padding:0;background:va
   </article>
 
   <article class="settings-card">
-    <h3>Sauvegarde</h3><p>Exporter toutes les fiches, comptes et historiques visibles pour toi.</p>
+    <h3>Sauvegarde & import</h3>
+    <p>Exporter les données ou importer des fiches depuis un fichier Excel, CSV ou JSON. Les doublons sont ignorés automatiquement.</p>
     <div class="row" style="justify-content:flex-start;flex-wrap:wrap">
       <button id="exportBtn" class="ghost-btn">Exporter JSON</button>
+      <button id="importBtn" class="ghost-btn" type="button">Importer Excel / CSV / JSON</button>
+      <input id="importFile" type="file" accept=".xlsx,.xls,.csv,.json" class="hidden">
     </div>
   </article>
 
@@ -199,6 +202,7 @@ dialog{width:min(92vw,630px);border:0;border-radius:25px;padding:0;background:va
 <dialog id="historyDialog"><div class="dialog-body"><div class="dialog-head"><div><div class="eyebrow">Historique</div><h3 id="historyTitle">Historique</h3></div><button id="closeHistory" class="icon-btn">✕</button></div><div id="historyList" class="user-list" style="margin-top:14px"></div></div></dialog>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <script>
 /* =========================================================
    CONFIGURATION — à remplir avec les infos de ton projet
@@ -516,12 +520,128 @@ deleteUser.onclick=async()=>{
 }
 closeUser.onclick=()=>userDialog.close();
 
+
 exportBtn.onclick=async()=>{
  const {data:hist}=await sb.from("history").select("*");
  const payload={exportedAt:new Date().toISOString(),profiles,businesses,history:hist||[],settings:settingsRow};
  const blob=new Blob([JSON.stringify(payload,null,2)],{type:"application/json"}),a=document.createElement("a");
  a.href=URL.createObjectURL(blob);a.download=`suivi-boites-${new Date().toISOString().slice(0,10)}.json`;a.click();URL.revokeObjectURL(a.href);
 }
+
+function importNorm(v=""){
+ return String(v??"").trim().toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/[^a-z0-9]+/g," ").trim();
+}
+function importVal(row,names){
+ const keys=Object.keys(row||{});
+ for(const name of names){
+  const wanted=importNorm(name);
+  const key=keys.find(k=>importNorm(k)===wanted);
+  if(key!==undefined&&row[key]!==undefined&&row[key]!==null)return row[key];
+ }
+ return "";
+}
+function importStatus(v){
+ const n=importNorm(v);
+ const map={
+  "deposee":"deposee","boite deposee":"deposee",
+  "recuperee":"recuperee","boite recuperee":"recuperee",
+  "volee":"volee","perdue":"perdue",
+  "a remplacer":"remplacer","remplacer":"remplacer",
+  "aucune":"aucune","aucune boite":"aucune"
+ };
+ return map[n]||"deposee";
+}
+function importDate(v){
+ if(!v)return null;
+ if(v instanceof Date&&!isNaN(v))return v.toISOString();
+ if(typeof v==="number"&&window.XLSX?.SSF){
+  const p=XLSX.SSF.parse_date_code(v);
+  if(p)return new Date(p.y,p.m-1,p.d,p.H||0,p.M||0,p.S||0).toISOString();
+ }
+ const d=new Date(v);
+ return isNaN(d)?null:d.toISOString();
+}
+function importOwnerId(v){
+ const n=importNorm(v);
+ if(!n)return isAdmin()?null:currentUser.id;
+ const p=profiles.find(x=>importNorm(x.name)===n||importNorm(x.email||"")===n);
+ return p?.id||(isAdmin()?null:currentUser.id);
+}
+function importBusinessFromRow(row){
+ const name=String(importVal(row,["nom","commerce","nom commerce","enseigne","name"])).trim();
+ if(!name)return null;
+ return {
+  name,
+  address:String(importVal(row,["adresse","address"])).trim(),
+  city:String(importVal(row,["ville","city","commune"])).trim(),
+  phone:String(importVal(row,["telephone","téléphone","tel","phone","numero","numéro"])).trim(),
+  owner_id:importOwnerId(importVal(row,["responsable","gestionnaire","owner","proprietaire","propriétaire"])),
+  status:importStatus(importVal(row,["statut","status","etat","état"])),
+  notes:String(importVal(row,["notes","note","commentaire","commentaires"])).trim(),
+  last_visit:importDate(importVal(row,["derniere visite","dernière visite","last visit","last_visit","date visite"])),
+  created_by:currentUser.id
+ };
+}
+function importKey(b){
+ return [b.name,b.address,b.city].map(importNorm).join("|");
+}
+async function importRowsFromFile(file){
+ const ext=(file.name.split(".").pop()||"").toLowerCase();
+ if(ext==="json"){
+  const parsed=JSON.parse(await file.text());
+  if(Array.isArray(parsed))return parsed;
+  if(Array.isArray(parsed.businesses))return parsed.businesses;
+  throw new Error("JSON non reconnu : aucune liste de fiches trouvée.");
+ }
+ if(!window.XLSX)throw new Error("Le lecteur Excel n'a pas pu être chargé.");
+ const buffer=await file.arrayBuffer();
+ const wb=XLSX.read(buffer,{type:"array",cellDates:true});
+ const rows=[];
+ wb.SheetNames.forEach(name=>{
+  rows.push(...XLSX.utils.sheet_to_json(wb.Sheets[name],{defval:""}));
+ });
+ return rows;
+}
+async function importDataFile(file){
+ if(!file)return;
+ importBtn.disabled=true;
+ const originalLabel=importBtn.textContent;
+ importBtn.textContent="Import en cours…";
+ try{
+  const rows=await importRowsFromFile(file);
+  const parsed=rows.map(importBusinessFromRow).filter(Boolean);
+  if(!parsed.length)throw new Error('Aucune fiche exploitable. Vérifie qu’une colonne "Nom" ou "Commerce" existe.');
+  const existing=new Set(businesses.map(importKey));
+  const seen=new Set();
+  const fresh=parsed.filter(b=>{
+   const k=importKey(b);
+   if(existing.has(k)||seen.has(k))return false;
+   seen.add(k);
+   return true;
+  });
+  if(!fresh.length){
+   alert("Aucune nouvelle fiche à importer : tout semble déjà présent.");
+   return;
+  }
+  const {data,error}=await sb.from("businesses").insert(fresh).select("id,name");
+  if(error)throw error;
+  for(const item of (data||[])){
+   try{await addHist(item.id,"Fiche importée",`Import depuis ${file.name}.`)}catch(e){}
+  }
+  await loadBusinesses();
+  const duplicates=parsed.length-fresh.length;
+  alert(`${fresh.length} fiche${fresh.length>1?"s":""} importée${fresh.length>1?"s":""}. ${duplicates} doublon${duplicates>1?"s":""} ignoré${duplicates>1?"s":""}.`);
+ }catch(e){
+  console.error(e);
+  alert(`Import impossible : ${e.message||e}`);
+ }finally{
+  importBtn.disabled=false;
+  importBtn.textContent=originalLabel;
+  importFile.value="";
+ }
+}
+importBtn.onclick=()=>importFile.click();
+importFile.onchange=()=>importDataFile(importFile.files?.[0]);
 
 /* ===================== NAVIGATION ===================== */
 function showHome(){homeView.classList.remove("hidden");settingsView.classList.add("hidden");navHome.classList.add("active");navSettings.classList.remove("active")}
