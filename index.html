@@ -538,19 +538,67 @@ navHistory.onclick=async()=>{
 searchInput.oninput=render;ownerFilter.onchange=render;statusFilter.onchange=render;cityFilter.onchange=render;
 
 /* ===================== NOTIFICATIONS ===================== */
-function notifSupported(){return "Notification" in window}
-function updateNotifStatus(){if(!notifSupported()){notifStatus.textContent="Notifications système non disponibles dans ce mode.";enableNotifBtn.disabled=true;return}notifStatus.textContent=Notification.permission==="granted"?"Notifications activées.":"Active les notifications pour être averti des fiches à revoir."}
-enableNotifBtn.onclick=async()=>{if(!notifSupported())return;const p=await Notification.requestPermission();updateNotifStatus();if(p==="granted"){new Notification("Suivi des boîtes",{body:"Notifications activées."});checkAndNotify(true)}}
-testNotifBtn.onclick=async()=>{if(!notifSupported())return alert("Notifications indisponibles.");if(Notification.permission!=="granted")await Notification.requestPermission();if(Notification.permission==="granted")new Notification("Test — Suivi des boîtes",{body:"La notification fonctionne."})}
-function checkAndNotify(force=false){
+function notifSupported(){return "Notification" in window && "serviceWorker" in navigator}
+
+let notifRegistration=null;
+async function getNotifRegistration(){
+ if(!notifSupported())return null;
+ if(notifRegistration)return notifRegistration;
+ try{
+  const existing=await navigator.serviceWorker.getRegistration("./");
+  notifRegistration=existing||await navigator.serviceWorker.register("./sw.js").then(()=>navigator.serviceWorker.ready);
+  return notifRegistration;
+ }catch(e){console.error("Service worker:",e);return null}
+}
+
+async function showSystemNotification(title,options={}){
+ const reg=await getNotifRegistration();
+ if(!reg)throw new Error("Service worker indisponible");
+ return reg.showNotification(title,options);
+}
+
+function updateNotifStatus(){
+ if(!notifSupported()){notifStatus.textContent="Notifications système non disponibles dans ce navigateur.";enableNotifBtn.disabled=true;testNotifBtn.disabled=true;return}
+ enableNotifBtn.disabled=Notification.permission==="granted";
+ notifStatus.textContent=Notification.permission==="granted"?"Notifications activées.":Notification.permission==="denied"?"Notifications bloquées. Autorise-les dans les réglages du navigateur pour ce site.":"Active les notifications pour être averti des fiches à revoir.";
+}
+
+enableNotifBtn.onclick=async()=>{
+ if(!notifSupported())return alert("Notifications indisponibles sur ce navigateur.");
+ try{
+  const p=await Notification.requestPermission();
+  updateNotifStatus();
+  if(p==="granted"){await showSystemNotification("Suivi des boîtes",{body:"Notifications activées."});await checkAndNotify(true)}
+  else if(p==="denied")alert("Les notifications sont bloquées. Autorise-les dans les réglages du navigateur pour ce site.");
+ }catch(e){console.error(e);alert("Impossible d'activer les notifications sur cet appareil.")}
+}
+
+testNotifBtn.onclick=async()=>{
+ if(!notifSupported())return alert("Notifications indisponibles sur ce navigateur.");
+ try{
+  let p=Notification.permission;
+  if(p!=="granted")p=await Notification.requestPermission();
+  updateNotifStatus();
+  if(p==="granted")await showSystemNotification("Test — Suivi des boîtes",{body:"La notification fonctionne."});
+  else alert("Autorise d'abord les notifications pour ce site.");
+ }catch(e){console.error(e);alert("Le test de notification a échoué sur cet appareil.")}
+}
+
+function localDateKey(d=new Date()){return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`}
+
+async function checkAndNotify(force=false){
  if(!currentUser||!notifSupported()||Notification.permission!=="granted")return;
  const dueList=businesses.filter(b=>(isAdmin()||b.owner_id===currentUser.id)&&due(b));
  if(!dueList.length)return;
- const key=new Date().toISOString().slice(0,10)+"-"+currentUser.id;
+ const key=localDateKey()+"-"+currentUser.id;
  if(!force&&localStorage.getItem(NOTIF_LAST)===key)return;
- new Notification(`⚠ ${dueList.length} fiche${dueList.length>1?"s":""} à revoir`,{body:`${dueList.slice(0,3).map(b=>b.name).join(", ")}${dueList.length>3?"…":""}`});
- localStorage.setItem(NOTIF_LAST,key);
+ try{
+  await showSystemNotification(`⚠ ${dueList.length} fiche${dueList.length>1?"s":""} à revoir`,{body:`${dueList.slice(0,3).map(b=>b.name).join(", ")}${dueList.length>3?"…":""}`,data:{url:"./"}});
+  localStorage.setItem(NOTIF_LAST,key);
+ }catch(e){console.error("Notification:",e)}
 }
+
+getNotifRegistration();
 setInterval(()=>checkAndNotify(false),3600000);
 
 boot();
