@@ -1,134 +1,37 @@
-const CACHE_NAME = "suivi-acmd-v5";
-
-const APP_SHELL = [
-  "./",
-  "./index.html",
-  "./manifest.webmanifest",
-  "./icon-192.png",
-  "./icon-512.png"
-];
-
-self.addEventListener("install", event => {
-  event.waitUntil(
-    caches.open(CACHE_NAME).then(cache => cache.addAll(APP_SHELL))
-  );
-
-  self.skipWaiting();
-});
-
-self.addEventListener("activate", event => {
-  event.waitUntil(
-    caches.keys().then(keys =>
-      Promise.all(
-        keys
-          .filter(k => k !== CACHE_NAME)
-          .map(k => caches.delete(k))
-      )
-    )
-  );
-
-  self.clients.claim();
-});
-
-self.addEventListener("fetch", event => {
-  const req = event.request;
-
-  if (req.method !== "GET") return;
-
-  const url = new URL(req.url);
-
-  // Ne jamais intercepter Supabase ou d'autres domaines externes.
-  if (url.origin !== self.location.origin) return;
-
-  // Navigation : réseau d'abord, cache en secours.
-  if (req.mode === "navigate") {
-    event.respondWith(
-      fetch(req)
-        .then(res => {
-          const copy = res.clone();
-
-          caches.open(CACHE_NAME).then(cache => {
-            cache.put("./index.html", copy);
-          });
-
-          return res;
-        })
-        .catch(() => caches.match("./index.html"))
-    );
-
-    return;
-  }
-
-  // Ressources locales : cache d'abord, puis réseau.
-  event.respondWith(
-    caches.match(req).then(cached => {
-      if (cached) return cached;
-
-      return fetch(req).then(res => {
-        if (res && res.status === 200) {
-          const copy = res.clone();
-
-          caches.open(CACHE_NAME).then(cache => {
-            cache.put(req, copy);
-          });
-        }
-
-        return res;
-      });
-    })
-  );
-});
-
 self.addEventListener("push", event => {
   let data = {};
 
   try {
-    data = event.data
-      ? event.data.json()
-      : {};
-  } catch (_) {
+    data = event.data ? event.data.json() : {};
+  } catch (e) {
     data = {
-      body: event.data
-        ? event.data.text()
-        : "Un rappel est disponible."
+      title: "Suivi des boîtes ACMD",
+      body: event.data ? event.data.text() : "Vous avez un rappel."
     };
   }
 
-  const title =
-    data.title ||
-    "Suivi des boîtes ACMD";
+  const title = data.title || "Suivi des boîtes ACMD";
 
   const options = {
-    body:
-      data.body ||
-      "Des commerces sont à revoir.",
-
-    icon: "./icon-192.png",
-    badge: "./icon-192.png",
-
-    tag:
-      data.tag ||
-      "acmd-reminder",
-
-    renotify: true,
-
+    body: data.body || "Une fiche nécessite votre attention.",
+    icon: data.icon || "./icon-192.png",
+    badge: data.badge || "./icon-192.png",
+    tag: data.tag || "acmd-rappel",
     data: {
-      url:
-        data.url ||
-        "./"
+      url: data.url || "./"
     }
   };
 
   event.waitUntil(
-    self.registration.showNotification(
-      title,
-      options
-    )
+    self.registration.showNotification(title, options)
   );
 });
 
 self.addEventListener("notificationclick", event => {
   event.notification.close();
+
+  const targetUrl =
+    event.notification?.data?.url || "./";
 
   event.waitUntil(
     clients
@@ -144,10 +47,7 @@ self.addEventListener("notificationclick", event => {
         }
 
         if (clients.openWindow) {
-          return clients.openWindow(
-            event.notification?.data?.url ||
-            "./"
-          );
+          return clients.openWindow(targetUrl);
         }
       })
   );
