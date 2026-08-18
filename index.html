@@ -233,7 +233,7 @@ function esc(s=""){return String(s).replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt
 function fmt(iso){return iso?new Intl.DateTimeFormat("fr-FR",{dateStyle:"medium",timeStyle:"short"}).format(new Date(iso)):"Jamais"}
 function daysSince(iso){return iso?Math.floor((Date.now()-new Date(iso))/86400000):99999}
 function due(b){return reminderIsPending(b)}
-function nextDue(b){if(b.status!=="deposee")return "Aucune échéance";return new Intl.DateTimeFormat("fr-FR",{dateStyle:"medium"}).format(reminderDueAt(b))}).format(d)}
+function nextDue(b){if(b.status!=="deposee")return "Aucune échéance";return new Intl.DateTimeFormat("fr-FR",{dateStyle:"medium"}).format(reminderDueAt(b))}
 function isAdmin(){return currentUser?.role==="admin"}
 function profileById(uid){return profiles.find(p=>p.id===uid)}
 function applyTheme(){document.body.classList.toggle("dark",localStorage.getItem(THEME_KEY)==="dark")}
