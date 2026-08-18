@@ -27,8 +27,35 @@ button,input,select,textarea{font:inherit}button{cursor:pointer}h1,h2,h3,h4,p{ma
 .filter-shell{margin-bottom:22px}.filter-toggle{width:100%;display:flex;align-items:center;justify-content:space-between;border:1px solid var(--border);background:var(--surface);color:var(--text);border-radius:16px;padding:13px 15px;font-weight:900;box-shadow:var(--shadow)}.filter-toggle .chev{transition:transform .25s ease}.filter-toggle.open .chev{transform:rotate(180deg)}.filter-panel{display:grid;grid-template-columns:1fr 180px 180px 180px;gap:10px;max-height:0;opacity:0;overflow:hidden;transform:translateY(-6px);transition:max-height .32s ease,opacity .24s ease,transform .32s ease}.filter-panel.open{max-height:360px;opacity:1;transform:translateY(0);padding-top:10px}.toolbar{display:contents}input,select,textarea{width:100%;background:var(--surface);color:var(--text);border:1px solid var(--border);border-radius:14px;padding:13px 14px;outline:none}input:focus,select:focus,textarea:focus{border-color:#98a2b3;box-shadow:0 0 0 4px rgba(152,162,179,.12)}
 .section-head{margin-bottom:12px}.pill{background:var(--surface2);padding:8px 10px;border-radius:999px;color:var(--muted);font-size:.8rem;font-weight:900}
 .cards{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}.city-header{grid-column:1/-1;font-size:.72rem;text-transform:uppercase;letter-spacing:.12em;font-weight:900;color:var(--muted);padding:14px 4px 2px;border-top:1px solid var(--border);margin-top:4px}.city-header:first-child{border-top:0;margin-top:0;padding-top:0}.card{background:var(--surface);border:1px solid var(--border);border-radius:22px;padding:18px;box-shadow:var(--shadow)}.card.overdue{border-color:#f79009}.card-top{display:flex;justify-content:space-between;gap:12px;align-items:flex-start}.card h4{font-size:1.03rem;margin-bottom:6px}.address,.meta{color:var(--muted);font-size:.85rem;line-height:1.45}.meta{margin-top:10px}
-.badge{padding:8px 10px;border-radius:999px;font-size:.73rem;font-weight:900;white-space:nowrap}.deposee{background:var(--successbg);color:var(--success)}.volee,.perdue{background:var(--dangerbg);color:var(--danger)}.remplacer{background:var(--warnbg);color:var(--warn)}.recuperee,.aucune{background:var(--surface2);color:var(--muted)}
+.badge{padding:8px 10px;border-radius:999px;font-size:.73rem;font-weight:900;white-space:nowrap;border:1px solid transparent}
+.deposee{background:#ecfdf3;color:#067647;border-color:#abefc6}
+.recuperee{background:#eff8ff;color:#175cd3;border-color:#b2ddff}
+.volee,.perdue{background:#fef3f2;color:#b42318;border-color:#fecdca}
+.remplacer{background:#fff4e5;color:#b54708;border-color:#fedf89}
+.aucune{background:#f2f4f7;color:#667085;border-color:#d0d5dd}
+
+/* Couleur visible directement sur toute la fiche */
+.card.status-deposee{border-left:6px solid #12b76a}
+.card.status-recuperee{border-left:6px solid #2e90fa}
+.card.status-volee,.card.status-perdue{border-left:6px solid #f04438;background:linear-gradient(90deg,rgba(254,243,242,.9),var(--surface) 22%)}
+.card.status-remplacer{border-left:6px solid #f79009;background:linear-gradient(90deg,rgba(255,250,235,.95),var(--surface) 22%)}
+.card.status-aucune{border-left:6px solid #98a2b3}
+
+/* Champ Statut dans Modifier la fiche */
+#bStatus.status-deposee{background:#ecfdf3;color:#067647;border-color:#12b76a;font-weight:900}
+#bStatus.status-recuperee{background:#eff8ff;color:#175cd3;border-color:#2e90fa;font-weight:900}
+#bStatus.status-volee,#bStatus.status-perdue{background:#fef3f2;color:#b42318;border-color:#f04438;font-weight:900}
+#bStatus.status-remplacer{background:#fff4e5;color:#b54708;border-color:#f79009;font-weight:900}
+#bStatus.status-aucune{background:#f2f4f7;color:#667085;border-color:#98a2b3;font-weight:900}
+#bStatus option[value="deposee"]{color:#067647}
+#bStatus option[value="recuperee"]{color:#175cd3}
+#bStatus option[value="volee"],#bStatus option[value="perdue"]{color:#b42318}
+#bStatus option[value="remplacer"]{color:#b54708}
+#bStatus option[value="aucune"]{color:#667085}
 .manager{display:inline-flex;margin-top:10px;padding:6px 9px;border-radius:999px;background:var(--surface2);font-size:.74rem;font-weight:900;color:var(--muted)}.due-chip,.ok-chip{display:inline-flex;margin-top:9px;padding:6px 9px;border-radius:999px;font-size:.74rem;font-weight:900}.due-chip{background:var(--warnbg);color:var(--warn)}.ok-chip{background:var(--successbg);color:var(--success)}
+.repl-chip{display:inline-flex;margin-top:9px;margin-left:8px;padding:6px 9px;border-radius:999px;font-size:.74rem;font-weight:900;background:var(--infobg);color:var(--info)}
+.status-options{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-top:4px}.status-opt{border:1px solid var(--border);border-radius:14px;padding:13px 12px;font-weight:900;text-align:left;position:relative}.status-opt.current{outline:2px solid var(--primary);outline-offset:2px}
+.hist{padding:12px 14px;background:var(--surface2);border-radius:14px;margin-bottom:9px;font-size:.85rem;line-height:1.5}
 .card-status-row{display:flex;align-items:center;justify-content:space-between;gap:10px}.more-actions-btn{width:40px;height:40px;border:1px solid var(--border);border-radius:12px;background:var(--surface2);color:var(--text);font-weight:900;font-size:1.35rem;line-height:1;transition:transform .25s ease}.more-actions-btn.open{transform:rotate(45deg)}.card-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px;max-height:0;opacity:0;overflow:hidden;margin-top:0;transform:translateY(-6px);transition:max-height .32s ease,opacity .22s ease,transform .32s ease,margin-top .32s ease}.card-actions.open{max-height:560px;opacity:1;margin-top:14px;transform:translateY(0)}.card-actions button,.card-actions a{border:1px solid var(--border);background:var(--surface2);color:var(--text);border-radius:12px;padding:10px;text-align:center;text-decoration:none;font-size:.8rem;font-weight:900}.visit-btn{grid-column:1/-1;background:var(--primary)!important;color:var(--contrast)!important}.maps-btn{background:var(--infobg)!important;color:var(--info)!important;border-color:#b2ddff!important}.delete-card-btn{grid-column:1/-1;background:var(--dangerbg)!important;color:var(--danger)!important;border-color:#fecdca!important}
 .bottom-nav{position:fixed;left:50%;bottom:14px;transform:translateX(-50%);width:min(94%,650px);display:grid;grid-template-columns:repeat(4,1fr);background:rgba(16,24,40,.96);border-radius:22px;padding:8px;box-shadow:0 18px 45px rgba(16,24,40,.3);z-index:20}.bottom-nav button{border:0;background:transparent;color:#98a2b3;padding:9px 4px;border-radius:14px}.bottom-nav span{display:block;font-size:.64rem;margin-top:3px;font-weight:800}.bottom-nav .active{background:#fff;color:#101828}
 .settings{display:grid;gap:14px}.settings-card{background:var(--surface);border:1px solid var(--border);border-radius:22px;padding:18px;box-shadow:var(--shadow)}.settings-card h3{margin-bottom:5px}.settings-card>p{color:var(--muted);font-size:.86rem;line-height:1.5;margin-bottom:14px}.user-list{display:grid;gap:9px}.user-row{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:12px;background:var(--surface2);border-radius:14px}.user-row small{color:var(--muted);display:block;margin-top:3px}.role{font-size:.7rem;padding:5px 8px;border-radius:999px;background:var(--surface);font-weight:900}
@@ -139,7 +166,7 @@ dialog{width:min(92vw,630px);border:0;border-radius:25px;padding:0;background:va
       <label>Nom affiché<input id="profileName"></label>
       <label>Email<input id="profileEmail" disabled></label>
       <label>Nouveau mot de passe<input id="profilePassword" type="password" placeholder="Laisser vide pour conserver"></label>
-      <label>Rôle<select id="profileRole"><option value="admin">Administrateur</option><option value="member">Collaborateur</option></select></label>
+      <label>Rôle<select id="profileRole" disabled><option value="admin">Administrateur</option><option value="member">Collaborateur</option></select></label>
     </div>
     <button id="saveProfile" class="primary-btn" style="margin-top:12px">Enregistrer mon profil</button>
   </article>
@@ -229,6 +256,16 @@ dialog{width:min(92vw,630px);border:0;border-radius:25px;padding:0;background:va
 
 <dialog id="historyDialog"><div class="dialog-body"><div class="dialog-head"><div><div class="eyebrow">Historique</div><h3 id="historyTitle">Historique</h3></div><button id="closeHistory" class="icon-btn">✕</button></div><div id="historyList" class="user-list" style="margin-top:14px"></div></div></dialog>
 
+<dialog id="statusDialog"><div class="dialog-body"><div class="dialog-head"><div><div class="eyebrow">Fiche commerce</div><h3>Changer le statut</h3></div><button type="button" id="closeStatus" class="icon-btn">✕</button></div><div id="statusOptions" class="status-options" style="margin-top:14px"></div></div></dialog>
+
+<dialog id="replaceDialog"><form id="replaceForm" class="dialog-body form">
+<div class="dialog-head"><div><div class="eyebrow">Boîte physique</div><h3>Enregistrer un changement de boîte</h3></div><button type="button" id="closeReplace" class="icon-btn">✕</button></div>
+<label>Note (optionnel)<textarea id="replaceNote" rows="3" placeholder="Ex : boîte abîmée, remplacée par une neuve"></textarea></label>
+<div class="dialog-actions"><button type="button" id="cancelReplace" class="ghost-btn">Annuler</button><button class="primary-btn">Enregistrer le changement</button></div>
+</form></dialog>
+
+<dialog id="replacementModal"><div class="dialog-body"><div class="dialog-head"><div><div class="eyebrow">Boîte physique</div><h3 id="replacementTitle">Changements de boîte</h3></div><button type="button" id="closeReplacementModal" class="icon-btn">✕</button></div><div id="replacementBody" class="user-list" style="margin-top:14px"></div></div></dialog>
+
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <script>
@@ -244,6 +281,12 @@ const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 const THEME_KEY="suivi_theme_v1",OWNERVIEW_KEY="suivi_ownerview_v2",NOTIF_LAST="suivi_notif_last_v1";
 const labels={deposee:"Boîte déposée",recuperee:"Boîte récupérée",volee:"Boîte volée",perdue:"Boîte perdue",remplacer:"À remplacer",aucune:"Aucune boîte"};
+function applyStatusFieldColor(){
+ if(typeof bStatus==="undefined"||!bStatus)return;
+ bStatus.classList.remove("status-deposee","status-recuperee","status-volee","status-perdue","status-remplacer","status-aucune");
+ bStatus.classList.add("status-"+(bStatus.value||"aucune"));
+}
+
 
 let currentUser=null;          // {id, name, role, email}
 let profiles=[];               // toutes les fiches profils
@@ -313,7 +356,7 @@ createAdmin.onclick=async()=>{
 
 registerBtn.onclick=async()=>{
  hideErr(registerError);
- const name=regName.value.trim(),email=regEmail.value.trim(),password=regPassword.value,role=regRole.value==="admin"?"admin":"member";
+ const name=regName.value.trim(),email=regEmail.value.trim(),password=regPassword.value,role="member";
  if(!name||!email||password.length<6)return showErr(registerError,"Nom, email et mot de passe (6 caractères min.) requis.");
  registerBtn.disabled=true;
  const {data,error}=await sb.auth.signUp({email,password});
@@ -372,11 +415,14 @@ async function loadAll(){
  ]);
  profiles=p||[];businesses=b||[];
  if(s)settingsRow=s;
+ await loadReplacementCounts();
  render();renderSettings();
 }
 async function loadBusinesses(){
  const {data}=await sb.from("businesses").select("*");
- businesses=data||[];render();
+ businesses=data||[];
+ await loadReplacementCounts();
+ render();
 }
 function subscribeRealtime(){
  if(realtimeChannel)return;
@@ -401,18 +447,21 @@ async function loadReplacementCounts(){
  if(error){console.error("Compteurs changements:",error);return}
  (data||[]).forEach(r=>replacementCounts[r.business_id]=(replacementCounts[r.business_id]||0)+1);
 }
-async function showReplacementHistory(businessId,businessName){
+window.showReplacementHistory=async businessId=>{
+ const biz=businesses.find(x=>x.id===businessId);
+ replacementTitle.textContent=`Changements de boîte — ${biz?biz.name:""}`;
+ replacementBody.innerHTML=`<div class="empty">Chargement…</div>`;
+ replacementModal.showModal();
  const {data,error}=await sb.from("box_replacements")
   .select("id,changed_at,note,changed_by")
   .eq("business_id",businessId)
   .order("changed_at",{ascending:false});
- if(error)return alert(error.message);
- replacementTitle.textContent=`Changements de boîte — ${businessName}`;
+ if(error)return replacementBody.innerHTML=`<div class="empty">${esc(error.message)}</div>`;
  replacementBody.innerHTML=(data||[]).length
-  ? data.map((r,i)=>`<div class="hist"><strong>Changement n° ${(data.length-i)}</strong><br>${new Date(r.changed_at).toLocaleString("fr-FR")}${r.note?`<br>${esc(r.note)}`:""}</div>`).join("")
+  ? data.map((r,i)=>{const u=profileById(r.changed_by);return `<div class="hist"><strong>Changement n° ${(data.length-i)}</strong><br>${new Date(r.changed_at).toLocaleString("fr-FR")} · ${u?esc(u.name):"Utilisateur"}${r.note?`<br>${esc(r.note)}`:""}</div>`}).join("")
   : `<div class="empty">Aucun changement de boîte enregistré.</div>`;
- replacementModal.classList.remove("hidden");
 }
+closeReplacementModal.onclick=()=>replacementModal.close();
 async function recordBoxReplacement(businessId,note=""){
  const {error}=await sb.from("box_replacements").insert({
   business_id:businessId,
@@ -423,6 +472,25 @@ async function recordBoxReplacement(businessId,note=""){
  await addHist(businessId,"Boîte changée","Remplacement de la boîte enregistré.");
  replacementCounts[businessId]=(replacementCounts[businessId]||0)+1;
 }
+let replaceTargetId=null;
+window.openReplace=bid=>{
+ const b=businesses.find(x=>x.id===bid);if(!b)return;
+ if(!isAdmin()&&b.owner_id!==currentUser.id)return alert("Cette boîte ne t'est pas attribuée.");
+ replaceTargetId=bid;replaceNote.value="";replaceDialog.showModal();
+}
+replaceForm.onsubmit=async e=>{
+ e.preventDefault();
+ if(!replaceTargetId)return;
+ const submitBtn=replaceForm.querySelector(".primary-btn");submitBtn.disabled=true;
+ try{
+  await recordBoxReplacement(replaceTargetId,replaceNote.value);
+  replaceDialog.close();
+  await loadBusinesses();
+ }catch(err){alert(err.message)}
+ submitBtn.disabled=false;
+}
+cancelReplace.onclick=()=>replaceDialog.close();
+closeReplace.onclick=()=>replaceDialog.close();
 
 
 function reminderBaseDate(b){
@@ -479,8 +547,9 @@ function render(){
    const cityLabel=inferredCity(b)||"Ville non renseignée";
    if(!city&&cityLabel!==lastCityHeader){cardsHtml+=`<div class="city-header">${esc(cityLabel)}</div>`;lastCityHeader=cityLabel}
    const own=profileById(b.owner_id),d=due(b);
-   cardsHtml+=`<article class="card ${d?"overdue":""}"><div class="card-top"><div><h4>${esc(b.name)}</h4><p class="address">${esc(b.address||"")}<br>${esc(inferredCity(b))}</p></div><span class="badge ${b.status}">${labels[b.status]}</span></div><span class="manager">👤 ${own?esc(own.name):"Non attribuée"}</span><div class="meta">Dernière visite : <strong>${fmt(b.last_visit)}</strong><br>Prochaine échéance : <strong>${new Intl.DateTimeFormat("fr-FR",{dateStyle:"medium"}).format(reminderDueAt(b))}</strong></div><div class="card-status-row"><span class="${d?"due-chip":"ok-chip"}">${d?"⚠ À revoir":"✓ À jour"}</span><button class="more-actions-btn" type="button" aria-label="Afficher les actions" aria-expanded="false" onclick="toggleCardActions('${b.id}',this)">+</button></div>${reminderLabel(b)?`<div class="reminder-action-chip" style="margin-top:10px;padding:9px 10px;border-radius:12px;background:var(--warnbg);color:var(--warn);font-size:.78rem;font-weight:900">${reminderLabel(b)}</div>`:""}
-<div id="actions-${b.id}" class="card-actions"><button onclick="editB('${b.id}')">Modifier</button><button onclick="historyB('${b.id}')">Historique</button>${reminderIsPending(b)&&!b.reminder_snooze_used?`<button class="report-reminder-btn" onclick="snoozeReminder('${b.id}')">⏰ Reporter 30 jours</button>`:""}<a class="maps-btn" target="_blank" rel="noopener" href="https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent((b.address||"")+", "+inferredCity(b))}">📍 Itinéraire Maps</a><button onclick="statusB('${b.id}')">Statut boîte</button><button class="delete-card-btn" onclick="deleteB('${b.id}')">🗑 Supprimer la fiche</button><button class="visit-btn" onclick="visitB('${b.id}')">✓ Visite effectuée maintenant</button></div></article>`;
+   const replCount=replacementCounts[b.id]||0;
+   cardsHtml+=`<article class="card status-${b.status} ${d?"overdue":""}"><div class="card-top"><div><h4>${esc(b.name)}</h4><p class="address">${esc(b.address||"")}<br>${esc(inferredCity(b))}</p></div><span class="badge ${b.status}">${labels[b.status]}</span></div><span class="manager">👤 ${own?esc(own.name):"Non attribuée"}</span>${replCount?`<span class="repl-chip">🔁 ${replCount} boîte${replCount>1?"s":""} changée${replCount>1?"s":""}</span>`:""}<div class="meta">Dernière visite : <strong>${fmt(b.last_visit)}</strong><br>Prochaine échéance : <strong>${new Intl.DateTimeFormat("fr-FR",{dateStyle:"medium"}).format(reminderDueAt(b))}</strong></div><div class="card-status-row"><span class="${d?"due-chip":"ok-chip"}">${d?"⚠ À revoir":"✓ À jour"}</span><button class="more-actions-btn" type="button" aria-label="Afficher les actions" aria-expanded="false" onclick="toggleCardActions('${b.id}',this)">+</button></div>${reminderLabel(b)?`<div class="reminder-action-chip" style="margin-top:10px;padding:9px 10px;border-radius:12px;background:var(--warnbg);color:var(--warn);font-size:.78rem;font-weight:900">${reminderLabel(b)}</div>`:""}
+<div id="actions-${b.id}" class="card-actions"><button onclick="editB('${b.id}')">Modifier</button><button onclick="historyB('${b.id}')">Historique</button>${reminderIsPending(b)&&!b.reminder_snooze_used?`<button class="report-reminder-btn" onclick="snoozeReminder('${b.id}')">⏰ Reporter 30 jours</button>`:""}<a class="maps-btn" target="_blank" rel="noopener" href="https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent((b.address||"")+", "+inferredCity(b))}">📍 Itinéraire Maps</a><button onclick="statusB('${b.id}')">Statut boîte</button><button onclick="openReplace('${b.id}')">🔁 Boîte changée</button>${replCount?`<button onclick="showReplacementHistory('${b.id}')">Historique boîte (${replCount})</button>`:""}<button class="delete-card-btn" onclick="deleteB('${b.id}')">🗑 Supprimer la fiche</button><button class="visit-btn" onclick="visitB('${b.id}')">✓ Visite effectuée maintenant</button></div></article>`;
   }
  }
  cards.innerHTML=cardsHtml;
@@ -509,17 +578,24 @@ window.visitB=async bid=>{
  await addHist(bid,"Visite effectuée","Date et heure enregistrées automatiquement.");
  await loadBusinesses();
 }
-window.statusB=async bid=>{
+const statusOrder=["deposee","recuperee","volee","perdue","remplacer","aucune"];
+let statusTargetId=null;
+window.statusB=bid=>{
  const b=businesses.find(x=>x.id===bid);if(!b)return;
  if(!isAdmin()&&b.owner_id!==currentUser.id)return alert("Cette boîte ne t'est pas attribuée.");
- const v=prompt("1 Déposée\n2 Récupérée\n3 Volée\n4 Perdue\n5 À remplacer\n6 Aucune");
- const map={1:"deposee",2:"recuperee",3:"volee",4:"perdue",5:"remplacer",6:"aucune"};
- if(!map[v])return;
- const {error}=await sb.from("businesses").update({status:map[v]}).eq("id",bid);
+ statusTargetId=bid;
+ statusOptions.innerHTML=statusOrder.map(s=>`<button type="button" class="status-opt ${s}${s===b.status?" current":""}" onclick="applyStatus('${s}')">${labels[s]}${s===b.status?" · actuel":""}</button>`).join("");
+ statusDialog.showModal();
+}
+window.applyStatus=async status=>{
+ const bid=statusTargetId;if(!bid)return;
+ statusDialog.close();
+ const {error}=await sb.from("businesses").update({status}).eq("id",bid);
  if(error)return alert(error.message);
- await addHist(bid,labels[map[v]],"Statut modifié.");
+ await addHist(bid,labels[status],"Statut modifié.");
  await loadBusinesses();
 }
+closeStatus.onclick=()=>statusDialog.close();
 window.deleteB=async bid=>{
  const b=businesses.find(x=>x.id===bid);if(!b)return;
  if(!isAdmin()&&b.owner_id!==currentUser.id)return alert("Cette fiche ne t'est pas attribuée.");
@@ -532,7 +608,7 @@ window.editB=bid=>{
  const b=businesses.find(x=>x.id===bid);if(!b)return;
  if(!isAdmin()&&b.owner_id!==currentUser.id)return alert("Cette boîte ne t'est pas attribuée.");
  editingBusiness=bid;fillOwners();
- bName.value=b.name;bAddress.value=b.address||"";bCity.value=b.city||"";bPhone.value=b.phone||"";bOwner.value=b.owner_id||"";bStatus.value=b.status;bNotes.value=b.notes||"";
+ bName.value=b.name;bAddress.value=b.address||"";bCity.value=b.city||"";bPhone.value=b.phone||"";bOwner.value=b.owner_id||"";bStatus.value=b.status;applyStatusFieldColor();bNotes.value=b.notes||"";
  businessTitle.textContent="Modifier la fiche";deleteBusiness.style.display="inline-block";businessDialog.showModal();
 }
 window.historyB=async bid=>{
@@ -595,7 +671,7 @@ function renderSettings(){
 }
 saveProfile.onclick=async()=>{
  const n=profileName.value.trim();if(!n)return;
- const role=profileRole.value==="admin"?"admin":"member";
+ const role=currentUser.role;
  const {error}=await sb.from("profiles").update({name:n,role}).eq("id",currentUser.id);
  if(error)return alert(error.message);
  if(profilePassword.value){
@@ -980,7 +1056,7 @@ filterToggle.onclick=()=>{
  filterToggle.classList.toggle("open",open);
  filterToggle.setAttribute("aria-expanded",open?"true":"false");
 };
-searchInput.oninput=render;ownerFilter.onchange=render;statusFilter.onchange=render;cityFilter.onchange=render;
+searchInput.oninput=render;ownerFilter.onchange=render;statusFilter.onchange=render;cityFilter.onchange=render;bStatus.onchange=applyStatusFieldColor;
 
 
 /* ===================== WEB PUSH ===================== */
