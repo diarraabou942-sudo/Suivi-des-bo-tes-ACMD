@@ -24,18 +24,18 @@ button,input,select,textarea{font:inherit}button{cursor:pointer}h1,h2,h3,h4,p{ma
 .stats{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin:18px 0}.stats article{background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:17px;box-shadow:var(--shadow)}.stats span{font-size:.8rem;color:var(--muted);font-weight:800}.stats strong{display:block;font-size:1.8rem;margin-top:6px}.stats .warning{background:var(--warnbg)}.stats .danger{background:var(--dangerbg)}
 .alert-box{background:var(--warnbg);border:1px solid #fedf89;color:#93370d;padding:14px 16px;border-radius:16px;margin-bottom:16px;font-weight:800}
 .notif-panel{display:flex;justify-content:space-between;align-items:center;gap:16px;background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:16px 18px;margin-bottom:18px;box-shadow:var(--shadow)}.notif-panel p{color:var(--muted);font-size:.86rem;line-height:1.45}.notif-actions{display:flex;gap:8px;flex-wrap:wrap}
-.toolbar{display:grid;grid-template-columns:1fr 180px 180px 180px;gap:10px;margin-bottom:22px}input,select,textarea{width:100%;background:var(--surface);color:var(--text);border:1px solid var(--border);border-radius:14px;padding:13px 14px;outline:none}input:focus,select:focus,textarea:focus{border-color:#98a2b3;box-shadow:0 0 0 4px rgba(152,162,179,.12)}
+.filter-shell{margin-bottom:22px}.filter-toggle{width:100%;display:flex;align-items:center;justify-content:space-between;border:1px solid var(--border);background:var(--surface);color:var(--text);border-radius:16px;padding:13px 15px;font-weight:900;box-shadow:var(--shadow)}.filter-toggle .chev{transition:transform .25s ease}.filter-toggle.open .chev{transform:rotate(180deg)}.filter-panel{display:grid;grid-template-columns:1fr 180px 180px 180px;gap:10px;max-height:0;opacity:0;overflow:hidden;transform:translateY(-6px);transition:max-height .32s ease,opacity .24s ease,transform .32s ease}.filter-panel.open{max-height:360px;opacity:1;transform:translateY(0);padding-top:10px}.toolbar{display:contents}input,select,textarea{width:100%;background:var(--surface);color:var(--text);border:1px solid var(--border);border-radius:14px;padding:13px 14px;outline:none}input:focus,select:focus,textarea:focus{border-color:#98a2b3;box-shadow:0 0 0 4px rgba(152,162,179,.12)}
 .section-head{margin-bottom:12px}.pill{background:var(--surface2);padding:8px 10px;border-radius:999px;color:var(--muted);font-size:.8rem;font-weight:900}
 .cards{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}.city-header{grid-column:1/-1;font-size:.72rem;text-transform:uppercase;letter-spacing:.12em;font-weight:900;color:var(--muted);padding:14px 4px 2px;border-top:1px solid var(--border);margin-top:4px}.city-header:first-child{border-top:0;margin-top:0;padding-top:0}.card{background:var(--surface);border:1px solid var(--border);border-radius:22px;padding:18px;box-shadow:var(--shadow)}.card.overdue{border-color:#f79009}.card-top{display:flex;justify-content:space-between;gap:12px;align-items:flex-start}.card h4{font-size:1.03rem;margin-bottom:6px}.address,.meta{color:var(--muted);font-size:.85rem;line-height:1.45}.meta{margin-top:10px}
 .badge{padding:8px 10px;border-radius:999px;font-size:.73rem;font-weight:900;white-space:nowrap}.deposee{background:var(--successbg);color:var(--success)}.volee,.perdue{background:var(--dangerbg);color:var(--danger)}.remplacer{background:var(--warnbg);color:var(--warn)}.recuperee,.aucune{background:var(--surface2);color:var(--muted)}
 .manager{display:inline-flex;margin-top:10px;padding:6px 9px;border-radius:999px;background:var(--surface2);font-size:.74rem;font-weight:900;color:var(--muted)}.due-chip,.ok-chip{display:inline-flex;margin-top:9px;padding:6px 9px;border-radius:999px;font-size:.74rem;font-weight:900}.due-chip{background:var(--warnbg);color:var(--warn)}.ok-chip{background:var(--successbg);color:var(--success)}
-.card-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:14px}.card-actions button,.card-actions a{border:1px solid var(--border);background:var(--surface2);color:var(--text);border-radius:12px;padding:10px;text-align:center;text-decoration:none;font-size:.8rem;font-weight:900}.visit-btn{grid-column:1/-1;background:var(--primary)!important;color:var(--contrast)!important}.maps-btn{background:var(--infobg)!important;color:var(--info)!important;border-color:#b2ddff!important}.delete-card-btn{grid-column:1/-1;background:var(--dangerbg)!important;color:var(--danger)!important;border-color:#fecdca!important}
+.card-status-row{display:flex;align-items:center;justify-content:space-between;gap:10px}.more-actions-btn{width:40px;height:40px;border:1px solid var(--border);border-radius:12px;background:var(--surface2);color:var(--text);font-weight:900;font-size:1.35rem;line-height:1;transition:transform .25s ease}.more-actions-btn.open{transform:rotate(45deg)}.card-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px;max-height:0;opacity:0;overflow:hidden;margin-top:0;transform:translateY(-6px);transition:max-height .32s ease,opacity .22s ease,transform .32s ease,margin-top .32s ease}.card-actions.open{max-height:560px;opacity:1;margin-top:14px;transform:translateY(0)}.card-actions button,.card-actions a{border:1px solid var(--border);background:var(--surface2);color:var(--text);border-radius:12px;padding:10px;text-align:center;text-decoration:none;font-size:.8rem;font-weight:900}.visit-btn{grid-column:1/-1;background:var(--primary)!important;color:var(--contrast)!important}.maps-btn{background:var(--infobg)!important;color:var(--info)!important;border-color:#b2ddff!important}.delete-card-btn{grid-column:1/-1;background:var(--dangerbg)!important;color:var(--danger)!important;border-color:#fecdca!important}
 .bottom-nav{position:fixed;left:50%;bottom:14px;transform:translateX(-50%);width:min(94%,650px);display:grid;grid-template-columns:repeat(4,1fr);background:rgba(16,24,40,.96);border-radius:22px;padding:8px;box-shadow:0 18px 45px rgba(16,24,40,.3);z-index:20}.bottom-nav button{border:0;background:transparent;color:#98a2b3;padding:9px 4px;border-radius:14px}.bottom-nav span{display:block;font-size:.64rem;margin-top:3px;font-weight:800}.bottom-nav .active{background:#fff;color:#101828}
 .settings{display:grid;gap:14px}.settings-card{background:var(--surface);border:1px solid var(--border);border-radius:22px;padding:18px;box-shadow:var(--shadow)}.settings-card h3{margin-bottom:5px}.settings-card>p{color:var(--muted);font-size:.86rem;line-height:1.5;margin-bottom:14px}.user-list{display:grid;gap:9px}.user-row{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:12px;background:var(--surface2);border-radius:14px}.user-row small{color:var(--muted);display:block;margin-top:3px}.role{font-size:.7rem;padding:5px 8px;border-radius:999px;background:var(--surface);font-weight:900}
 .setting-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}.setting-grid label,.form label{display:block;font-size:.81rem;font-weight:900}.setting-grid input,.setting-grid select,.form input,.form select,.form textarea{margin-top:7px}.warning-note{background:var(--warnbg);color:var(--warn);padding:12px 14px;border-radius:14px;font-size:.83rem;font-weight:800;line-height:1.45}.info-note{background:var(--infobg);color:var(--info);padding:12px 14px;border-radius:14px;font-size:.83rem;font-weight:800;line-height:1.45}
 .auth-screen{min-height:100vh;display:grid;place-items:center;padding:18px;background:radial-gradient(circle at top,#1f2937 0,#111827 35%,#0b1220 100%)}.auth-card{width:min(94vw,480px);background:rgba(255,255,255,.98);color:#101828;border-radius:30px;padding:26px;box-shadow:0 30px 80px rgba(0,0,0,.35)}.auth-logo{width:56px;height:56px;border-radius:18px;background:#111827;color:#fff;display:grid;place-items:center;font-size:1.5rem;font-weight:900;margin-bottom:18px}.auth-card h2{font-size:2rem;margin-bottom:8px}.auth-card p{color:#667085;line-height:1.5;margin-bottom:18px}.auth-card label{display:block;font-size:.82rem;font-weight:900;margin-top:12px}.auth-card input,.auth-card select{margin-top:7px;background:#fff;color:#101828}.auth-card .primary-btn{width:100%;margin-top:18px;background:#111827;color:#fff}.auth-tabs{display:grid;grid-template-columns:1fr 1fr;background:#f2f4f7;padding:4px;border-radius:14px;margin-bottom:18px}.auth-tabs button{border:0;background:transparent;border-radius:10px;padding:10px;font-weight:900;color:#667085}.auth-tabs button.active{background:#fff;color:#101828;box-shadow:0 2px 8px rgba(16,24,40,.08)}.auth-error{color:var(--danger);font-size:.82rem;font-weight:800;margin-top:10px}
 dialog{width:min(92vw,630px);border:0;border-radius:25px;padding:0;background:var(--surface);color:var(--text);box-shadow:0 30px 80px rgba(0,0,0,.28)}dialog::backdrop{background:rgba(2,6,23,.55);backdrop-filter:blur(4px)}.dialog-body{padding:22px}.icon-btn{width:44px;height:44px;border-radius:14px;border:1px solid var(--border);background:var(--surface);color:var(--text)}.form label{margin-top:13px}.two-cols{display:grid;grid-template-columns:1fr 1fr;gap:10px}.dialog-actions{margin-top:20px}.empty{text-align:center;padding:45px 20px;border:1px dashed var(--border);border-radius:20px;color:var(--muted);background:var(--surface);grid-column:1/-1}
-@media(max-width:760px){.hero{flex-direction:column;align-items:stretch}.stats{grid-template-columns:repeat(2,1fr)}.toolbar{grid-template-columns:1fr 1fr}.toolbar input{grid-column:1/-1}.cards{grid-template-columns:1fr}.setting-grid,.two-cols{grid-template-columns:1fr}.user-chip .user-text{display:none}.notif-panel{flex-direction:column;align-items:stretch}.notif-actions{display:grid;grid-template-columns:1fr 1fr}}
+@media(max-width:760px){.hero{flex-direction:column;align-items:stretch}.stats{grid-template-columns:repeat(2,1fr)}.filter-panel{grid-template-columns:1fr 1fr}.filter-panel input{grid-column:1/-1}.cards{grid-template-columns:1fr}.setting-grid,.two-cols{grid-template-columns:1fr}.user-chip .user-text{display:none}.notif-panel{flex-direction:column;align-items:stretch}.notif-actions{display:grid;grid-template-columns:1fr 1fr}}
 </style>
 </head>
 <body>
@@ -112,19 +112,18 @@ dialog{width:min(92vw,630px);border:0;border-radius:25px;padding:0;background:va
 
   <section class="notif-panel">
     <div><div class="eyebrow">Notifications</div><h3>Rappels</h3><p id="notifStatus">Notifications non activées.</p></div>
-    <div class="notif-actions"><button id="enableNotifBtn" class="primary-btn">Activer</button><button id="testNotifBtn" class="ghost-btn">Tester</button></div>
+    <div class="notif-actions"><button id="enableNotifBtn" class="primary-btn">Activer</button></div>
   </section>
 
-  <section id="installPanel" class="notif-panel hidden">
-    <div><div class="eyebrow">Application</div><h3>Installer Suivi ACMD</h3><p id="installStatus">Installe l’application sur l’écran d’accueil pour l’ouvrir comme une vraie appli.</p></div>
-    <div class="notif-actions"><button id="installBtn" class="primary-btn">Installer l’application</button></div>
-  </section>
 
-  <section class="toolbar">
-    <input id="searchInput" type="search" placeholder="Rechercher un commerce, une ville...">
-    <select id="ownerFilter"><option value="mine">Mes boîtes</option><option value="all">Toutes les boîtes</option><option value="unassigned">Non attribuées</option></select>
-    <select id="statusFilter"><option value="">Tous les statuts</option><option value="deposee">Déposée</option><option value="recuperee">Récupérée</option><option value="volee">Volée</option><option value="perdue">Perdue</option><option value="remplacer">À remplacer</option><option value="aucune">Aucune</option></select>
-    <select id="cityFilter"><option value="">Toutes les villes</option></select>
+  <section class="filter-shell">
+    <button id="filterToggle" class="filter-toggle" type="button" aria-expanded="false"><span>☰ Filtres</span><span class="chev">⌄</span></button>
+    <div id="filterPanel" class="filter-panel">
+      <input id="searchInput" type="search" placeholder="Rechercher un commerce, une ville...">
+      <select id="ownerFilter"><option value="mine">Mes boîtes</option><option value="all">Toutes les boîtes</option><option value="unassigned">Non attribuées</option></select>
+      <select id="statusFilter"><option value="">Tous les statuts</option><option value="deposee">Déposée</option><option value="recuperee">Récupérée</option><option value="volee">Volée</option><option value="perdue">Perdue</option><option value="remplacer">À remplacer</option><option value="aucune">Aucune</option></select>
+      <select id="cityFilter"><option value="">Toutes les villes</option></select>
+    </div>
   </section>
 
   <section class="section-head"><div><div class="eyebrow">Fiches commerces</div><h3>Suivi actif</h3></div><span id="countPill" class="pill">0 fiche</span></section>
@@ -145,6 +144,12 @@ dialog{width:min(92vw,630px);border:0;border-radius:25px;padding:0;background:va
     <button id="saveProfile" class="primary-btn" style="margin-top:12px">Enregistrer mon profil</button>
   </article>
 
+  <article id="installPanel" class="settings-card hidden">
+    <h3>Installer l’application</h3>
+    <p id="installStatus">Installe Suivi ACMD sur l’écran d’accueil pour l’ouvrir comme une vraie application.</p>
+    <button id="installBtn" class="primary-btn" type="button">Installer l’application</button>
+  </article>
+
   <article class="settings-card">
     <div class="row"><div><h3>Équipe inscrite</h3><p style="margin:5px 0 0;color:var(--muted);font-size:.86rem">Toutes les personnes ayant créé un compte sur l’application.</p></div><span id="teamCount" class="pill">0 membre</span></div>
     <div id="teamList" class="user-list" style="margin-top:14px"></div>
@@ -153,7 +158,7 @@ dialog{width:min(92vw,630px);border:0;border-radius:25px;padding:0;background:va
   <article id="usersSettings" class="settings-card">
     <div class="row"><div><h3>Administration des comptes</h3><p style="margin:5px 0 0;color:var(--muted);font-size:.86rem">Réservé aux administrateurs : modifier ou retirer les comptes.</p></div><button id="addUserBtn" class="primary-btn">+ Compte</button></div>
     <div id="userList" class="user-list" style="margin-top:14px"></div>
-    <div class="info-note" style="margin-top:12px">Les nouveaux utilisateurs peuvent aussi créer eux-mêmes leur compte depuis l’écran d’inscription et choisir Administrateur ou Collaborateur.</div>
+    <div class="info-note" style="margin-top:12px">Tu peux modifier ou supprimer complètement un compte. Lors d’une suppression, ses boîtes deviennent non attribuées et son accès email/mot de passe est supprimé.</div>
   </article>
 
   <article class="settings-card">
@@ -474,8 +479,8 @@ function render(){
    const cityLabel=inferredCity(b)||"Ville non renseignée";
    if(!city&&cityLabel!==lastCityHeader){cardsHtml+=`<div class="city-header">${esc(cityLabel)}</div>`;lastCityHeader=cityLabel}
    const own=profileById(b.owner_id),d=due(b);
-   cardsHtml+=`<article class="card ${d?"overdue":""}"><div class="card-top"><div><h4>${esc(b.name)}</h4><p class="address">${esc(b.address||"")}<br>${esc(inferredCity(b))}</p></div><span class="badge ${b.status}">${labels[b.status]}</span></div><span class="manager">👤 ${own?esc(own.name):"Non attribuée"}</span><div class="meta">Dernière visite : <strong>${fmt(b.last_visit)}</strong><br>Prochaine échéance : <strong>${new Intl.DateTimeFormat("fr-FR",{dateStyle:"medium"}).format(reminderDueAt(b))}</strong></div><span class="${d?"due-chip":"ok-chip"}">${d?"⚠ À revoir":"✓ À jour"}</span>${reminderLabel(b)?`<div class="reminder-action-chip" style="grid-column:1/-1;margin-top:10px;padding:9px 10px;border-radius:12px;background:var(--warnbg);color:var(--warn);font-size:.78rem;font-weight:900">${reminderLabel(b)}</div>`:""}
-<div class="card-actions"><button onclick="editB('${b.id}')">Modifier</button><button onclick="historyB('${b.id}')">Historique</button>${reminderIsPending(b)&&!b.reminder_snooze_used?`<button class="report-reminder-btn" onclick="snoozeReminder('${b.id}')">⏰ Reporter 30 jours</button>`:""}<a class="maps-btn" target="_blank" rel="noopener" href="https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent((b.address||"")+", "+inferredCity(b))}">📍 Itinéraire Maps</a><button onclick="statusB('${b.id}')">Statut boîte</button><button class="delete-card-btn" onclick="deleteB('${b.id}')">🗑 Supprimer la fiche</button><button class="visit-btn" onclick="visitB('${b.id}')">✓ Visite effectuée maintenant</button></div></article>`;
+   cardsHtml+=`<article class="card ${d?"overdue":""}"><div class="card-top"><div><h4>${esc(b.name)}</h4><p class="address">${esc(b.address||"")}<br>${esc(inferredCity(b))}</p></div><span class="badge ${b.status}">${labels[b.status]}</span></div><span class="manager">👤 ${own?esc(own.name):"Non attribuée"}</span><div class="meta">Dernière visite : <strong>${fmt(b.last_visit)}</strong><br>Prochaine échéance : <strong>${new Intl.DateTimeFormat("fr-FR",{dateStyle:"medium"}).format(reminderDueAt(b))}</strong></div><div class="card-status-row"><span class="${d?"due-chip":"ok-chip"}">${d?"⚠ À revoir":"✓ À jour"}</span><button class="more-actions-btn" type="button" aria-label="Afficher les actions" aria-expanded="false" onclick="toggleCardActions('${b.id}',this)">+</button></div>${reminderLabel(b)?`<div class="reminder-action-chip" style="margin-top:10px;padding:9px 10px;border-radius:12px;background:var(--warnbg);color:var(--warn);font-size:.78rem;font-weight:900">${reminderLabel(b)}</div>`:""}
+<div id="actions-${b.id}" class="card-actions"><button onclick="editB('${b.id}')">Modifier</button><button onclick="historyB('${b.id}')">Historique</button>${reminderIsPending(b)&&!b.reminder_snooze_used?`<button class="report-reminder-btn" onclick="snoozeReminder('${b.id}')">⏰ Reporter 30 jours</button>`:""}<a class="maps-btn" target="_blank" rel="noopener" href="https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent((b.address||"")+", "+inferredCity(b))}">📍 Itinéraire Maps</a><button onclick="statusB('${b.id}')">Statut boîte</button><button class="delete-card-btn" onclick="deleteB('${b.id}')">🗑 Supprimer la fiche</button><button class="visit-btn" onclick="visitB('${b.id}')">✓ Visite effectuée maintenant</button></div></article>`;
   }
  }
  cards.innerHTML=cardsHtml;
@@ -483,6 +488,13 @@ function render(){
  statTotal.textContent=base.length;statDue.textContent=dueCount;statOk.textContent=base.filter(b=>!due(b)).length;statStolen.textContent=base.filter(b=>b.status==="volee").length;countPill.textContent=`${list.length} fiche${list.length>1?"s":""}`;
  alertBox.classList.toggle("hidden",dueCount===0);if(dueCount)alertBox.textContent=`⚠ ${dueCount} commerce${dueCount>1?"s":""} à revoir maintenant.`;
 }
+
+window.toggleCardActions=(bid,btn)=>{
+ const panel=document.getElementById(`actions-${bid}`);if(!panel)return;
+ const open=panel.classList.toggle("open");
+ btn.classList.toggle("open",open);
+ btn.setAttribute("aria-expanded",open?"true":"false");
+};
 
 async function addHist(businessId,label,details=""){
  await sb.from("history").insert({business_id:businessId,user_id:currentUser.id,label,details});
@@ -578,7 +590,7 @@ function renderSettings(){
   const mail=p.email?` · ${esc(p.email)}`:"";
   return `<div class="user-row"><div><strong>${esc(p.name||"Utilisateur")}</strong><small>${p.role==="admin"?"Administrateur":"Collaborateur"}${mail}<br>${seenText} · ${businesses.filter(b=>b.owner_id===p.id).length} boîte(s)</small></div><span class="role">${p.role==="admin"?"Admin":"Collaborateur"}</span></div>`;
  }).join("");
- userList.innerHTML=profiles.map(p=>`<div class="user-row"><div><strong>${esc(p.name||"Utilisateur")}</strong><small>${p.email?esc(p.email)+" · ":""}${businesses.filter(b=>b.owner_id===p.id).length} boîte(s)</small></div><div><span class="role">${p.role==="admin"?"Administrateur":"Collaborateur"}</span> ${isAdmin()&&p.id!==currentUser.id?`<button class="ghost-btn" onclick="editU('${p.id}')">Modifier</button>`:""}</div></div>`).join("");
+ userList.innerHTML=profiles.map(p=>`<div class="user-row"><div><strong>${esc(p.name||"Utilisateur")}</strong><small>${p.email?esc(p.email)+" · ":""}${businesses.filter(b=>b.owner_id===p.id).length} boîte(s)</small></div><div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap"><span class="role">${p.role==="admin"?"Administrateur":"Collaborateur"}</span> ${isAdmin()&&p.id!==currentUser.id?`<button class="ghost-btn" onclick="editU('${p.id}')">Modifier</button><button class="danger-btn" onclick="deleteAccount('${p.id}')">Supprimer</button>`:""}</div></div>`).join("");
 }
 saveProfile.onclick=async()=>{
  const n=profileName.value.trim();if(!n)return;
@@ -636,12 +648,21 @@ userForm.onsubmit=async e=>{
  }
  userDialog.close();await loadAll();
 }
-deleteUser.onclick=async()=>{
- if(!editingUser||editingUser===currentUser.id)return;
- if(!confirm("Retirer ce compte ? Les boîtes deviendront non attribuées. Le compte de connexion (email/mot de passe) devra être supprimé depuis Supabase."))return;
- const {error}=await sb.from("profiles").delete().eq("id",editingUser);
+window.deleteAccount=async uid=>{
+ if(!isAdmin())return alert("Réservé aux administrateurs.");
+ if(uid===currentUser.id)return alert("Tu ne peux pas supprimer ton propre compte depuis ici.");
+ const p=profileById(uid);
+ if(!confirm(`Supprimer définitivement le compte de ${p?.name||"cet utilisateur"} ?\n\nSon accès sera supprimé et ses boîtes deviendront non attribuées.`))return;
+ const {error}=await sb.rpc("admin_delete_user_account",{p_user_id:uid});
  if(error)return alert(error.message);
- userDialog.close();await loadAll();
+ await loadAll();
+ alert("Compte supprimé.");
+};
+deleteUser.onclick=async()=>{
+ if(!editingUser)return;
+ const uid=editingUser;
+ userDialog.close();
+ await deleteAccount(uid);
 }
 closeUser.onclick=()=>userDialog.close();
 
@@ -874,6 +895,11 @@ navHistory.onclick=async()=>{
  historyList.innerHTML=items.length?items.map(h=>{const b=businesses.find(x=>x.id===h.business_id);return `<div class="user-row"><div><strong>${esc(b?b.name:"?")} · ${esc(h.label)}</strong><small>${fmt(h.at)} · ${esc(profileById(h.user_id)?.name||"Utilisateur")}</small></div></div>`}).join(""):`<div class="empty">Aucun historique.</div>`;
  historyDialog.showModal();
 }
+filterToggle.onclick=()=>{
+ const open=filterPanel.classList.toggle("open");
+ filterToggle.classList.toggle("open",open);
+ filterToggle.setAttribute("aria-expanded",open?"true":"false");
+};
 searchInput.oninput=render;ownerFilter.onchange=render;statusFilter.onchange=render;cityFilter.onchange=render;
 
 
@@ -953,7 +979,7 @@ async function getNotifRegistration(){
  if(notifRegistration)return notifRegistration;
  try{
   const existing=await navigator.serviceWorker.getRegistration("./");
-  notifRegistration=existing||await navigator.serviceWorker.register("./sw.js?v=4").then(()=>navigator.serviceWorker.ready);
+  notifRegistration=existing||await navigator.serviceWorker.register("./sw.js?v=5").then(()=>navigator.serviceWorker.ready);
   return notifRegistration;
  }catch(e){console.error("Service worker:",e);return null}
 }
@@ -978,7 +1004,7 @@ async function refreshPushStatus(){
 }
 
 function updateNotifStatus(){
- if(!notifSupported()){notifStatus.textContent="Notifications système non disponibles dans ce navigateur.";enableNotifBtn.disabled=true;testNotifBtn.disabled=true;return}
+ if(!notifSupported()){notifStatus.textContent="Notifications système non disponibles dans ce navigateur.";enableNotifBtn.disabled=true;return}
  enableNotifBtn.disabled=Notification.permission==="granted";
  notifStatus.textContent=Notification.permission==="granted"?"Notifications activées.":Notification.permission==="denied"?"Notifications bloquées. Autorise-les dans les réglages du navigateur pour ce site.":"Active les notifications pour être averti des fiches à revoir.";
 }
@@ -998,30 +1024,6 @@ enableNotifBtn.onclick=async()=>{
  }finally{
   enableNotifBtn.textContent="Activer";
   updateNotifStatus();
- }
-}
-
-testNotifBtn.onclick=async()=>{
- if(!notifSupported())return alert("Notifications indisponibles sur ce navigateur.");
- try{
-  const reg=await navigator.serviceWorker.ready;
-  let sub=await reg.pushManager.getSubscription();
-  if(!sub){
-   sub=await enableWebPush();
-  }else{
-   await savePushSubscription(sub);
-  }
-  updateNotifStatus();
-  await reg.showNotification("Test — Suivi des boîtes ACMD",{
-   body:"La notification fonctionne. Les rappels automatiques pourront arriver même application fermée.",
-   icon:"./icon-192.png",
-   badge:"./icon-192.png",
-   tag:"acmd-test",
-   data:{url:"./"}
-  });
- }catch(e){
-  console.error(e);
-  alert(e.message||"Le test de notification a échoué.");
  }
 }
 
@@ -1091,7 +1093,7 @@ installBtn.onclick=async()=>{
 
 if("serviceWorker" in navigator){
  window.addEventListener("load",()=>{
-  navigator.serviceWorker.register("./sw.js?v=4").catch(err=>console.error("PWA service worker:",err));
+  navigator.serviceWorker.register("./sw.js?v=5").catch(err=>console.error("PWA service worker:",err));
  });
 }
 
