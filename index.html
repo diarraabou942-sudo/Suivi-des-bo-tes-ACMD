@@ -139,7 +139,7 @@ dialog{width:min(92vw,630px);border:0;border-radius:25px;padding:0;background:va
       <label>Nom affiché<input id="profileName"></label>
       <label>Email<input id="profileEmail" disabled></label>
       <label>Nouveau mot de passe<input id="profilePassword" type="password" placeholder="Laisser vide pour conserver"></label>
-      <label>Rôle<input id="profileRole" disabled></label>
+      <label>Rôle<select id="profileRole"><option value="admin">Administrateur</option><option value="member">Collaborateur</option></select></label>
     </div>
     <button id="saveProfile" class="primary-btn" style="margin-top:12px">Enregistrer mon profil</button>
   </article>
@@ -575,7 +575,7 @@ closeBusiness.onclick=()=>businessDialog.close();closeHistory.onclick=()=>histor
 /* ===================== RÉGLAGES / COMPTES ===================== */
 function renderSettings(){
  profileName.value=currentUser.name;profileEmail.value=currentUser.email;
- profileRole.value=currentUser.role==="admin"?"Administrateur":"Collaborateur";profilePassword.value="";
+ profileRole.value=currentUser.role;profilePassword.value="";
  reminderDays.value=settingsRow.reminder_days;preAlertDays.value=settingsRow.pre_alert_days;
  themeSelect.value=localStorage.getItem(THEME_KEY)||"light";
  defaultOwnerView.value=isAdmin()?(localStorage.getItem(OWNERVIEW_KEY)||"all"):"all";
@@ -588,21 +588,29 @@ function renderSettings(){
   const online=seen&&(now-seen.getTime())<5*60*1000;
   const seenText=online?"🟢 En ligne":seen?`Vu ${new Intl.DateTimeFormat("fr-FR",{dateStyle:"short",timeStyle:"short"}).format(seen)}`:"Jamais connecté";
   const mail=p.email?` · ${esc(p.email)}`:"";
-  return `<div class="user-row"><div><strong>${esc(p.name||"Utilisateur")}</strong><small>${p.role==="admin"?"Administrateur":"Collaborateur"}${mail}<br>${seenText} · ${businesses.filter(b=>b.owner_id===p.id).length} boîte(s)</small></div><span class="role">${p.role==="admin"?"Admin":"Collaborateur"}</span></div>`;
+  const canDelete=isAdmin()&&p.id!==currentUser.id;
+  return `<div class="user-row"><div><strong>${esc(p.name||"Utilisateur")}</strong><small>${p.role==="admin"?"Administrateur":"Collaborateur"}${mail}<br>${seenText} · ${businesses.filter(b=>b.owner_id===p.id).length} boîte(s)</small></div><div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap"><span class="role">${p.role==="admin"?"Admin":"Collaborateur"}</span>${canDelete?`<button class="danger-btn" onclick="deleteAccount('${p.id}')">Supprimer</button>`:""}</div></div>`;
  }).join("");
  userList.innerHTML=profiles.map(p=>`<div class="user-row"><div><strong>${esc(p.name||"Utilisateur")}</strong><small>${p.email?esc(p.email)+" · ":""}${businesses.filter(b=>b.owner_id===p.id).length} boîte(s)</small></div><div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap"><span class="role">${p.role==="admin"?"Administrateur":"Collaborateur"}</span> ${isAdmin()&&p.id!==currentUser.id?`<button class="ghost-btn" onclick="editU('${p.id}')">Modifier</button><button class="danger-btn" onclick="deleteAccount('${p.id}')">Supprimer</button>`:""}</div></div>`).join("");
 }
 saveProfile.onclick=async()=>{
  const n=profileName.value.trim();if(!n)return;
- const {error}=await sb.from("profiles").update({name:n}).eq("id",currentUser.id);
+ const role=profileRole.value==="admin"?"admin":"member";
+ const {error}=await sb.from("profiles").update({name:n,role}).eq("id",currentUser.id);
  if(error)return alert(error.message);
  if(profilePassword.value){
   if(profilePassword.value.length<6)return alert("Mot de passe : 6 caractères minimum.");
   const {error:perr}=await sb.auth.updateUser({password:profilePassword.value});
   if(perr)return alert(perr.message);
  }
- currentUser.name=n;currentName.textContent=n;avatar.textContent=n.slice(0,1).toUpperCase();
- await loadAll();alert("Profil enregistré.");
+ currentUser.name=n;
+ currentUser.role=role;
+ currentName.textContent=n;
+ currentRole.textContent=role==="admin"?"Administrateur":"Collaborateur";
+ avatar.textContent=n.slice(0,1).toUpperCase();
+ await loadAll();
+ renderSettings();
+ alert(role==="admin"?"Profil enregistré. Tu es maintenant Administrateur.":"Profil enregistré. Tu es maintenant Collaborateur.");
 }
 saveReminders.onclick=async()=>{
  if(!isAdmin())return alert("Réservé aux administrateurs.");
@@ -979,7 +987,7 @@ async function getNotifRegistration(){
  if(notifRegistration)return notifRegistration;
  try{
   const existing=await navigator.serviceWorker.getRegistration("./");
-  notifRegistration=existing||await navigator.serviceWorker.register("./sw.js?v=5").then(()=>navigator.serviceWorker.ready);
+  notifRegistration=existing||await navigator.serviceWorker.register("./sw.js?v=6").then(()=>navigator.serviceWorker.ready);
   return notifRegistration;
  }catch(e){console.error("Service worker:",e);return null}
 }
@@ -1093,7 +1101,7 @@ installBtn.onclick=async()=>{
 
 if("serviceWorker" in navigator){
  window.addEventListener("load",()=>{
-  navigator.serviceWorker.register("./sw.js?v=5").catch(err=>console.error("PWA service worker:",err));
+  navigator.serviceWorker.register("./sw.js?v=6").catch(err=>console.error("PWA service worker:",err));
  });
 }
 
