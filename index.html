@@ -232,8 +232,8 @@ let realtimeChannel=null;
 function esc(s=""){return String(s).replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[m]))}
 function fmt(iso){return iso?new Intl.DateTimeFormat("fr-FR",{dateStyle:"medium",timeStyle:"short"}).format(new Date(iso)):"Jamais"}
 function daysSince(iso){return iso?Math.floor((Date.now()-new Date(iso))/86400000):99999}
-function due(b){return daysSince(b.last_visit)>=settingsRow.reminder_days}
-function nextDue(b){if(!b.last_visit)return "Dès que possible";const d=new Date(new Date(b.last_visit).getTime()+settingsRow.reminder_days*86400000);return new Intl.DateTimeFormat("fr-FR",{dateStyle:"medium"}).format(d)}
+function due(b){return reminderIsPending(b)}
+function nextDue(b){if(b.status!=="deposee")return "Aucune échéance";return new Intl.DateTimeFormat("fr-FR",{dateStyle:"medium"}).format(reminderDueAt(b))}).format(d)}
 function isAdmin(){return currentUser?.role==="admin"}
 function profileById(uid){return profiles.find(p=>p.id===uid)}
 function applyTheme(){document.body.classList.toggle("dark",localStorage.getItem(THEME_KEY)==="dark")}
@@ -393,6 +393,41 @@ async function recordBoxReplacement(businessId,note=""){
  replacementCounts[businessId]=(replacementCounts[businessId]||0)+1;
 }
 
+
+function reminderBaseDate(b){
+ return b.last_visit ? new Date(b.last_visit) : new Date(b.created_at || Date.now());
+}
+function reminderDueAt(b){
+ if(b.reminder_snoozed_until)return new Date(b.reminder_snoozed_until);
+ const d=reminderBaseDate(b);
+ return new Date(d.getTime()+settingsRow.reminder_days*86400000);
+}
+function reminderIsPending(b){
+ if(b.status!=="deposee")return false;
+ return Date.now()>=reminderDueAt(b).getTime();
+}
+function reminderLabel(b){
+ if(b.status!=="deposee")return "";
+ if(reminderIsPending(b)){
+  return b.reminder_snooze_used ? "⚠ À traiter — report déjà utilisé" : "⚠ À traiter — report disponible";
+ }
+ if(b.reminder_snoozed_until){
+  return `Reporté jusqu’au ${new Intl.DateTimeFormat("fr-FR",{dateStyle:"medium"}).format(new Date(b.reminder_snoozed_until))}`;
+ }
+ return "";
+}
+async function snoozeReminder(bid){
+ const b=businesses.find(x=>x.id===bid);if(!b)return;
+ if(b.reminder_snooze_used)return alert("Le report de 30 jours a déjà été utilisé pour cette échéance.");
+ if(b.status!=="deposee")return alert("Le report est disponible uniquement pour une boîte déposée.");
+ if(!confirm(`Reporter le rappel de "${b.name}" de 30 jours ?\n\nCe report n’est possible qu’une seule fois pour cette échéance.`))return;
+ const {data,error}=await sb.rpc("snooze_business_reminder",{p_business_id:bid});
+ if(error)return alert(error.message);
+ await addHist(bid,"Rappel reporté","Report unique de 30 jours utilisé.");
+ await loadBusinesses();
+ alert(`Rappel reporté jusqu’au ${new Intl.DateTimeFormat("fr-FR",{dateStyle:"long"}).format(new Date(data))}.`);
+}
+
 function render(){
  refreshCityFilter();
  const q=searchInput.value.toLowerCase().trim(),ownerMode=ownerFilter.value,status=statusFilter.value,city=cityFilter.value;
@@ -409,7 +444,8 @@ function render(){
    const cityLabel=inferredCity(b)||"Ville non renseignée";
    if(!city&&cityLabel!==lastCityHeader){cardsHtml+=`<div class="city-header">${esc(cityLabel)}</div>`;lastCityHeader=cityLabel}
    const own=profileById(b.owner_id),d=due(b);
-   cardsHtml+=`<article class="card ${d?"overdue":""}"><div class="card-top"><div><h4>${esc(b.name)}</h4><p class="address">${esc(b.address||"")}<br>${esc(inferredCity(b))}</p></div><span class="badge ${b.status}">${labels[b.status]}</span></div><span class="manager">👤 ${own?esc(own.name):"Non attribuée"}</span><div class="meta">Dernière visite : <strong>${fmt(b.last_visit)}</strong><br>Prochaine échéance : <strong>${nextDue(b)}</strong></div><span class="${d?"due-chip":"ok-chip"}">${d?"⚠ À revoir":"✓ À jour"}</span><div class="card-actions"><button onclick="editB('${b.id}')">Modifier</button><button onclick="historyB('${b.id}')">Historique</button><a class="maps-btn" target="_blank" rel="noopener" href="https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent((b.address||"")+", "+inferredCity(b))}">📍 Itinéraire Maps</a><button onclick="statusB('${b.id}')">Statut boîte</button><button class="delete-card-btn" onclick="deleteB('${b.id}')">🗑 Supprimer la fiche</button><button class="visit-btn" onclick="visitB('${b.id}')">✓ Visite effectuée maintenant</button></div></article>`;
+   cardsHtml+=`<article class="card ${d?"overdue":""}"><div class="card-top"><div><h4>${esc(b.name)}</h4><p class="address">${esc(b.address||"")}<br>${esc(inferredCity(b))}</p></div><span class="badge ${b.status}">${labels[b.status]}</span></div><span class="manager">👤 ${own?esc(own.name):"Non attribuée"}</span><div class="meta">Dernière visite : <strong>${fmt(b.last_visit)}</strong><br>Prochaine échéance : <strong>${new Intl.DateTimeFormat("fr-FR",{dateStyle:"medium"}).format(reminderDueAt(b))}</strong></div><span class="${d?"due-chip":"ok-chip"}">${d?"⚠ À revoir":"✓ À jour"}</span>${reminderLabel(b)?`<div class="reminder-action-chip" style="grid-column:1/-1;margin-top:10px;padding:9px 10px;border-radius:12px;background:var(--warnbg);color:var(--warn);font-size:.78rem;font-weight:900">${reminderLabel(b)}</div>`:""}
+<div class="card-actions"><button onclick="editB('${b.id}')">Modifier</button><button onclick="historyB('${b.id}')">Historique</button>${reminderIsPending(b)&&!b.reminder_snooze_used?`<button class="report-reminder-btn" onclick="snoozeReminder('${b.id}')">⏰ Reporter 30 jours</button>`:""}<a class="maps-btn" target="_blank" rel="noopener" href="https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent((b.address||"")+", "+inferredCity(b))}">📍 Itinéraire Maps</a><button onclick="statusB('${b.id}')">Statut boîte</button><button class="delete-card-btn" onclick="deleteB('${b.id}')">🗑 Supprimer la fiche</button><button class="visit-btn" onclick="visitB('${b.id}')">✓ Visite effectuée maintenant</button></div></article>`;
   }
  }
  cards.innerHTML=cardsHtml;
