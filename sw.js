@@ -1,4 +1,4 @@
-const CACHE_NAME = "suivi-acmd-v4";
+const CACHE_NAME = "suivi-acmd-v5";
 
 const APP_SHELL = [
   "./",
@@ -37,10 +37,10 @@ self.addEventListener("fetch", event => {
 
   const url = new URL(req.url);
 
-  // On ne touche pas aux appels Supabase ou aux sites externes
+  // Ne jamais intercepter Supabase ou d'autres domaines externes.
   if (url.origin !== self.location.origin) return;
 
-  // Pour les pages : réseau d'abord, cache en secours
+  // Navigation : réseau d'abord, cache en secours.
   if (req.mode === "navigate") {
     event.respondWith(
       fetch(req)
@@ -59,7 +59,7 @@ self.addEventListener("fetch", event => {
     return;
   }
 
-  // Pour les fichiers locaux : cache puis réseau
+  // Ressources locales : cache d'abord, puis réseau.
   event.respondWith(
     caches.match(req).then(cached => {
       if (cached) return cached;
@@ -83,7 +83,9 @@ self.addEventListener("push", event => {
   let data = {};
 
   try {
-    data = event.data ? event.data.json() : {};
+    data = event.data
+      ? event.data.json()
+      : {};
   } catch (_) {
     data = {
       body: event.data
