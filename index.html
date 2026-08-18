@@ -361,6 +361,38 @@ function refreshCityFilter(){
  cityFilter.innerHTML=`<option value="">Toutes les villes</option>`+cities.map(c=>`<option value="${esc(c)}">${esc(c)}</option>`).join("");
  if(cities.includes(current))cityFilter.value=current;
 }
+
+async function loadReplacementCounts(){
+ replacementCounts={};
+ if(!businesses.length)return;
+ const ids=businesses.map(b=>b.id);
+ const {data,error}=await sb.from("box_replacements").select("business_id").in("business_id",ids);
+ if(error){console.error("Compteurs changements:",error);return}
+ (data||[]).forEach(r=>replacementCounts[r.business_id]=(replacementCounts[r.business_id]||0)+1);
+}
+async function showReplacementHistory(businessId,businessName){
+ const {data,error}=await sb.from("box_replacements")
+  .select("id,changed_at,note,changed_by")
+  .eq("business_id",businessId)
+  .order("changed_at",{ascending:false});
+ if(error)return alert(error.message);
+ replacementTitle.textContent=`Changements de boîte — ${businessName}`;
+ replacementBody.innerHTML=(data||[]).length
+  ? data.map((r,i)=>`<div class="hist"><strong>Changement n° ${(data.length-i)}</strong><br>${new Date(r.changed_at).toLocaleString("fr-FR")}${r.note?`<br>${esc(r.note)}`:""}</div>`).join("")
+  : `<div class="empty">Aucun changement de boîte enregistré.</div>`;
+ replacementModal.classList.remove("hidden");
+}
+async function recordBoxReplacement(businessId,note=""){
+ const {error}=await sb.from("box_replacements").insert({
+  business_id:businessId,
+  changed_by:currentUser.id,
+  note:String(note||"").trim()
+ });
+ if(error)throw error;
+ await addHist(businessId,"Boîte changée","Remplacement de la boîte enregistré.");
+ replacementCounts[businessId]=(replacementCounts[businessId]||0)+1;
+}
+
 function render(){
  refreshCityFilter();
  const q=searchInput.value.toLowerCase().trim(),ownerMode=ownerFilter.value,status=statusFilter.value,city=cityFilter.value;
