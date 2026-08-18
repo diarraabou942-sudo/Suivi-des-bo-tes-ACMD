@@ -51,7 +51,7 @@ dialog{width:min(92vw,630px);border:0;border-radius:25px;padding:0;background:va
     <div id="firstAdmin">
       <div class="eyebrow">Premier lancement</div>
       <h2>Créer le compte administrateur</h2>
-      <p>Ce premier compte pourra ensuite créer les autres gestionnaires et attribuer les boîtes.</p>
+      <p>Ce premier compte pourra ensuite créer les collaborateurs et attribuer les boîtes.</p>
       <label>Nom affiché<input id="adminName" placeholder="Ex : Abou"></label>
       <label>Email<input id="adminEmail" type="email" placeholder="Ex : abou@exemple.com"></label>
       <label>Mot de passe<input id="adminPassword" type="password" placeholder="6 caractères minimum"></label>
@@ -70,12 +70,18 @@ dialog{width:min(92vw,630px);border:0;border-radius:25px;padding:0;background:va
     </div>
 
     <div id="registerPane" class="hidden">
-      <div class="eyebrow">Nouveau gestionnaire</div>
+      <div class="eyebrow">Nouveau compte</div>
       <h2>Créer un compte</h2>
-      <p>Un nouveau gestionnaire peut créer son compte ici. Il sera gestionnaire par défaut.</p>
+      <p>Choisis ton rôle au moment de l’inscription. Les administrateurs gèrent l’équipe et les réglages ; les collaborateurs participent au suivi des boîtes.</p>
       <label>Nom affiché<input id="regName"></label>
       <label>Email<input id="regEmail" type="email"></label>
       <label>Mot de passe<input id="regPassword" type="password" placeholder="6 caractères minimum"></label>
+      <label>Je m’inscris en tant que
+        <select id="regRole">
+          <option value="member">Collaborateur</option>
+          <option value="admin">Administrateur</option>
+        </select>
+      </label>
       <button id="registerBtn" class="primary-btn">Créer mon compte</button>
       <div id="registerError" class="auth-error hidden"></div>
     </div>
@@ -96,7 +102,7 @@ dialog{width:min(92vw,630px);border:0;border-radius:25px;padding:0;background:va
   </section>
 
   <section class="stats">
-    <article><span>Mes fiches</span><strong id="statTotal">0</strong></article>
+    <article><span>Fiches</span><strong id="statTotal">0</strong></article>
     <article><span>À jour</span><strong id="statOk">0</strong></article>
     <article class="warning"><span>À revoir</span><strong id="statDue">0</strong></article>
     <article class="danger"><span>Volées</span><strong id="statStolen">0</strong></article>
@@ -107,6 +113,11 @@ dialog{width:min(92vw,630px);border:0;border-radius:25px;padding:0;background:va
   <section class="notif-panel">
     <div><div class="eyebrow">Notifications</div><h3>Rappels</h3><p id="notifStatus">Notifications non activées.</p></div>
     <div class="notif-actions"><button id="enableNotifBtn" class="primary-btn">Activer</button><button id="testNotifBtn" class="ghost-btn">Tester</button></div>
+  </section>
+
+  <section id="installPanel" class="notif-panel hidden">
+    <div><div class="eyebrow">Application</div><h3>Installer Suivi ACMD</h3><p id="installStatus">Installe l’application sur l’écran d’accueil pour l’ouvrir comme une vraie appli.</p></div>
+    <div class="notif-actions"><button id="installBtn" class="primary-btn">Installer l’application</button></div>
   </section>
 
   <section class="toolbar">
@@ -134,10 +145,15 @@ dialog{width:min(92vw,630px);border:0;border-radius:25px;padding:0;background:va
     <button id="saveProfile" class="primary-btn" style="margin-top:12px">Enregistrer mon profil</button>
   </article>
 
+  <article class="settings-card">
+    <div class="row"><div><h3>Équipe inscrite</h3><p style="margin:5px 0 0;color:var(--muted);font-size:.86rem">Toutes les personnes ayant créé un compte sur l’application.</p></div><span id="teamCount" class="pill">0 membre</span></div>
+    <div id="teamList" class="user-list" style="margin-top:14px"></div>
+  </article>
+
   <article id="usersSettings" class="settings-card">
-    <div class="row"><div><h3>Gestionnaires</h3><p style="margin:5px 0 0;color:var(--muted);font-size:.86rem">Créer, modifier et retirer les comptes.</p></div><button id="addUserBtn" class="primary-btn">+ Compte</button></div>
+    <div class="row"><div><h3>Administration des comptes</h3><p style="margin:5px 0 0;color:var(--muted);font-size:.86rem">Réservé aux administrateurs : modifier ou retirer les comptes.</p></div><button id="addUserBtn" class="primary-btn">+ Compte</button></div>
     <div id="userList" class="user-list" style="margin-top:14px"></div>
-    <div class="info-note" style="margin-top:12px">Retirer un compte ici supprime son accès à l'app et libère ses boîtes. Pour supprimer entièrement le compte de connexion (email/mot de passe), il faut le faire depuis le tableau de bord Supabase (ou une fonction serveur dédiée) — la clé publique utilisée ici ne permet pas de le faire de façon sécurisée.</div>
+    <div class="info-note" style="margin-top:12px">Les nouveaux utilisateurs peuvent aussi créer eux-mêmes leur compte depuis l’écran d’inscription et choisir Administrateur ou Collaborateur.</div>
   </article>
 
   <article class="settings-card">
@@ -160,9 +176,11 @@ dialog{width:min(92vw,630px);border:0;border-radius:25px;padding:0;background:va
 
   <article class="settings-card">
     <h3>Sauvegarde & import</h3>
-    <p>Exporter les données ou importer des fiches depuis un fichier Excel, CSV ou JSON. Les doublons sont ignorés automatiquement.</p>
+    <p>Exporter les données en Excel, en CSV compatible Google Sheets, ou en JSON. L’import accepte Excel, CSV et JSON. Les doublons sont ignorés automatiquement.</p>
     <div class="row" style="justify-content:flex-start;flex-wrap:wrap">
-      <button id="exportBtn" class="ghost-btn">Exporter JSON</button>
+      <button id="exportExcelBtn" class="ghost-btn" type="button">Exporter Excel</button>
+      <button id="exportSheetsBtn" class="ghost-btn" type="button">Exporter Google Sheets (CSV)</button>
+      <button id="exportBtn" class="ghost-btn" type="button">Exporter JSON</button>
       <button id="importBtn" class="ghost-btn" type="button">Importer Excel / CSV / JSON</button>
       <input id="importFile" type="file" accept=".xlsx,.xls,.csv,.json" class="hidden">
     </div>
@@ -196,11 +214,11 @@ dialog{width:min(92vw,630px);border:0;border-radius:25px;padding:0;background:va
 </form></dialog>
 
 <dialog id="userDialog"><form id="userForm" class="dialog-body form">
-<div class="dialog-head"><div><div class="eyebrow">Gestionnaire</div><h3 id="userDialogTitle">Créer un compte</h3></div><button type="button" id="closeUser" class="icon-btn">✕</button></div>
+<div class="dialog-head"><div><div class="eyebrow">Collaborateur</div><h3 id="userDialogTitle">Créer un compte</h3></div><button type="button" id="closeUser" class="icon-btn">✕</button></div>
 <label>Nom affiché<input id="uName" required></label>
 <label>Email<input id="uEmail" type="email" required></label>
 <label>Mot de passe<input id="uPassword" type="password" placeholder="6 caractères minimum (création uniquement)"></label>
-<label>Rôle<select id="uRole"><option value="member">Gestionnaire</option><option value="admin">Administrateur</option></select></label>
+<label>Rôle<select id="uRole"><option value="member">Collaborateur</option><option value="admin">Administrateur</option></select></label>
 <div class="dialog-actions"><button type="button" id="deleteUser" class="danger-btn">Retirer</button><button class="primary-btn">Enregistrer</button></div>
 </form></dialog>
 
@@ -219,7 +237,7 @@ const VAPID_PUBLIC_KEY = "BL37QvdDpJw8E3GOTKaSKvZqkgwx7ReSh6FPV9f_R6Tc0KtRK5sbNl
 
 const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-const THEME_KEY="suivi_theme_v1",OWNERVIEW_KEY="suivi_ownerview_v1",NOTIF_LAST="suivi_notif_last_v1";
+const THEME_KEY="suivi_theme_v1",OWNERVIEW_KEY="suivi_ownerview_v2",NOTIF_LAST="suivi_notif_last_v1";
 const labels={deposee:"Boîte déposée",recuperee:"Boîte récupérée",volee:"Boîte volée",perdue:"Boîte perdue",remplacer:"À remplacer",aucune:"Aucune boîte"};
 
 let currentUser=null;          // {id, name, role, email}
@@ -290,14 +308,14 @@ createAdmin.onclick=async()=>{
 
 registerBtn.onclick=async()=>{
  hideErr(registerError);
- const name=regName.value.trim(),email=regEmail.value.trim(),password=regPassword.value;
+ const name=regName.value.trim(),email=regEmail.value.trim(),password=regPassword.value,role=regRole.value==="admin"?"admin":"member";
  if(!name||!email||password.length<6)return showErr(registerError,"Nom, email et mot de passe (6 caractères min.) requis.");
  registerBtn.disabled=true;
  const {data,error}=await sb.auth.signUp({email,password});
  registerBtn.disabled=false;
  if(error)return showErr(registerError,error.message);
  if(!data.session)return showErr(registerError,"Compte créé. Confirme ton email si demandé, puis connecte-toi.");
- const {error:perr}=await sb.from("profiles").insert({id:data.user.id,name,role:"member"});
+ const {error:perr}=await sb.from("profiles").insert({id:data.user.id,name,email,role,last_seen_at:new Date().toISOString()});
  if(perr)return showErr(registerError,perr.message);
  await afterAuth(data.user);
 }
@@ -318,16 +336,24 @@ async function afterAuth(user){
  const {data:profile,error}=await sb.from("profiles").select("*").eq("id",user.id).single();
  if(error||!profile){await sb.auth.signOut();return showAuthScreen()}
  currentUser={id:profile.id,name:profile.name,role:profile.role,email:user.email};
+ await sb.from("profiles").update({email:user.email,last_seen_at:new Date().toISOString()}).eq("id",user.id);
  authScreen.classList.add("hidden");mainApp.classList.remove("hidden");
  currentName.textContent=currentUser.name;
- currentRole.textContent=currentUser.role==="admin"?"Administrateur":"Gestionnaire";
+ currentRole.textContent=currentUser.role==="admin"?"Administrateur":"Collaborateur";
  avatar.textContent=currentUser.name.slice(0,1).toUpperCase();
- ownerFilter.value=localStorage.getItem(OWNERVIEW_KEY)||"mine";
+ if(isAdmin()){
+  ownerFilter.value=localStorage.getItem(OWNERVIEW_KEY)||"all";
+ }else{
+  localStorage.setItem(OWNERVIEW_KEY,"all");
+  ownerFilter.value="all";
+  [...ownerFilter.options].forEach(o=>o.hidden=o.value!=="all");
+ }
  await loadAll();
  subscribeRealtime();
  showHome();
  updateNotifStatus();
  refreshPushStatus();
+ updateInstallUI();
  setTimeout(checkAndNotify,800);
 }
 function logout(){sb.auth.signOut()}
@@ -430,12 +456,16 @@ async function snoozeReminder(bid){
 
 function render(){
  refreshCityFilter();
- const q=searchInput.value.toLowerCase().trim(),ownerMode=ownerFilter.value,status=statusFilter.value,city=cityFilter.value;
+ const q=searchInput.value.toLowerCase().trim(),status=statusFilter.value,city=cityFilter.value;
+ let ownerMode=ownerFilter.value;
+ if(!isAdmin()){
+  ownerMode="all";
+  ownerFilter.value="all";
+ }
  let list=[...businesses];
  if(ownerMode==="mine")list=list.filter(b=>b.owner_id===currentUser.id);
  if(ownerMode==="unassigned")list=list.filter(b=>!b.owner_id);
- if(!isAdmin()&&ownerMode==="all")list=list.filter(b=>b.owner_id===currentUser.id);
- list=list.filter(b=>(`${b.name} ${b.address||""} ${inferredCity(b)}`).toLowerCase().includes(q)&&(!status||b.status===status)&&(!city||inferredCity(b)===city));
+  list=list.filter(b=>(`${b.name} ${b.address||""} ${inferredCity(b)}`).toLowerCase().includes(q)&&(!status||b.status===status)&&(!city||inferredCity(b)===city));
  list.sort((a,b)=>inferredCity(a).localeCompare(inferredCity(b),"fr")||daysSince(b.last_visit)-daysSince(a.last_visit));
  let lastCityHeader=null,cardsHtml="";
  if(!list.length){cardsHtml=`<div class="empty">Aucune fiche à afficher.</div>`}
@@ -449,7 +479,7 @@ function render(){
   }
  }
  cards.innerHTML=cardsHtml;
- const mine=businesses.filter(b=>b.owner_id===currentUser.id),base=isAdmin()&&ownerMode==="all"?businesses:mine,dueCount=base.filter(due).length;
+ const mine=businesses.filter(b=>b.owner_id===currentUser.id),base=ownerMode==="all"?businesses:ownerMode==="unassigned"?businesses.filter(b=>!b.owner_id):mine,dueCount=base.filter(due).length;
  statTotal.textContent=base.length;statDue.textContent=dueCount;statOk.textContent=base.filter(b=>!due(b)).length;statStolen.textContent=base.filter(b=>b.status==="volee").length;countPill.textContent=`${list.length} fiche${list.length>1?"s":""}`;
  alertBox.classList.toggle("hidden",dueCount===0);if(dueCount)alertBox.textContent=`⚠ ${dueCount} commerce${dueCount>1?"s":""} à revoir maintenant.`;
 }
@@ -533,12 +563,22 @@ closeBusiness.onclick=()=>businessDialog.close();closeHistory.onclick=()=>histor
 /* ===================== RÉGLAGES / COMPTES ===================== */
 function renderSettings(){
  profileName.value=currentUser.name;profileEmail.value=currentUser.email;
- profileRole.value=currentUser.role==="admin"?"Administrateur":"Gestionnaire";profilePassword.value="";
+ profileRole.value=currentUser.role==="admin"?"Administrateur":"Collaborateur";profilePassword.value="";
  reminderDays.value=settingsRow.reminder_days;preAlertDays.value=settingsRow.pre_alert_days;
  themeSelect.value=localStorage.getItem(THEME_KEY)||"light";
- defaultOwnerView.value=localStorage.getItem(OWNERVIEW_KEY)||"mine";
+ defaultOwnerView.value=isAdmin()?(localStorage.getItem(OWNERVIEW_KEY)||"all"):"all";
+ defaultOwnerView.disabled=!isAdmin();
  usersSettings.classList.toggle("hidden",!isAdmin());
- userList.innerHTML=profiles.map(p=>`<div class="user-row"><div><strong>${esc(p.name)}</strong><small>${businesses.filter(b=>b.owner_id===p.id).length} boîte(s)</small></div><div><span class="role">${p.role==="admin"?"Admin":"Gestionnaire"}</span> ${isAdmin()?`<button class="ghost-btn" onclick="editU('${p.id}')">Modifier</button>`:""}</div></div>`).join("");
+ const now=Date.now();
+ teamCount.textContent=`${profiles.length} membre${profiles.length>1?"s":""}`;
+ teamList.innerHTML=profiles.map(p=>{
+  const seen=p.last_seen_at?new Date(p.last_seen_at):null;
+  const online=seen&&(now-seen.getTime())<5*60*1000;
+  const seenText=online?"🟢 En ligne":seen?`Vu ${new Intl.DateTimeFormat("fr-FR",{dateStyle:"short",timeStyle:"short"}).format(seen)}`:"Jamais connecté";
+  const mail=p.email?` · ${esc(p.email)}`:"";
+  return `<div class="user-row"><div><strong>${esc(p.name||"Utilisateur")}</strong><small>${p.role==="admin"?"Administrateur":"Collaborateur"}${mail}<br>${seenText} · ${businesses.filter(b=>b.owner_id===p.id).length} boîte(s)</small></div><span class="role">${p.role==="admin"?"Admin":"Collaborateur"}</span></div>`;
+ }).join("");
+ userList.innerHTML=profiles.map(p=>`<div class="user-row"><div><strong>${esc(p.name||"Utilisateur")}</strong><small>${p.email?esc(p.email)+" · ":""}${businesses.filter(b=>b.owner_id===p.id).length} boîte(s)</small></div><div><span class="role">${p.role==="admin"?"Administrateur":"Collaborateur"}</span> ${isAdmin()&&p.id!==currentUser.id?`<button class="ghost-btn" onclick="editU('${p.id}')">Modifier</button>`:""}</div></div>`).join("");
 }
 saveProfile.onclick=async()=>{
  const n=profileName.value.trim();if(!n)return;
@@ -561,8 +601,9 @@ saveReminders.onclick=async()=>{
 }
 saveDisplay.onclick=()=>{
  localStorage.setItem(THEME_KEY,themeSelect.value);
- localStorage.setItem(OWNERVIEW_KEY,defaultOwnerView.value);
- applyTheme();ownerFilter.value=defaultOwnerView.value;render();alert("Affichage enregistré.");
+ const view=isAdmin()?defaultOwnerView.value:"all";
+ localStorage.setItem(OWNERVIEW_KEY,view);
+ applyTheme();ownerFilter.value=view;render();alert("Affichage enregistré.");
 }
 window.editU=uid=>{
  if(!isAdmin())return;
@@ -580,7 +621,7 @@ userForm.onsubmit=async e=>{
  const name=uName.value.trim();
  if(!name)return alert("Nom requis.");
  if(editingUser){
-  const {error}=await sb.from("profiles").update({name,role:uRole.value}).eq("id",editingUser);
+  const {error}=await sb.from("profiles").update({name,role:"member"}).eq("id",editingUser);
   if(error)return alert(error.message);
  }else{
   const email=uEmail.value.trim(),password=uPassword.value;
@@ -590,7 +631,7 @@ userForm.onsubmit=async e=>{
   const {data,error}=await tempClient.auth.signUp({email,password});
   if(error)return alert(error.message);
   if(!data.user)return alert("Compte créé, mais confirmation email requise avant de pouvoir se connecter.");
-  const {error:perr}=await sb.from("profiles").insert({id:data.user.id,name,role:uRole.value});
+  const {error:perr}=await sb.from("profiles").insert({id:data.user.id,name,email,role:uRole.value==="admin"?"admin":"member",last_seen_at:null});
   if(perr)return alert(perr.message);
  }
  userDialog.close();await loadAll();
@@ -605,11 +646,99 @@ deleteUser.onclick=async()=>{
 closeUser.onclick=()=>userDialog.close();
 
 
+function exportDateValue(iso){
+ if(!iso)return "";
+ const d=new Date(iso);
+ if(isNaN(d))return "";
+ return new Intl.DateTimeFormat("fr-FR",{dateStyle:"short",timeStyle:"short"}).format(d);
+}
+function exportBusinessRows(){
+ return businesses.map(b=>({
+  "Nom":b.name||"",
+  "Adresse":b.address||"",
+  "Ville":inferredCity(b)||"",
+  "Téléphone":b.phone||"",
+  "Responsable":profileById(b.owner_id)?.name||"Non attribuée",
+  "Statut":labels[b.status]||b.status||"",
+  "Dernière visite":exportDateValue(b.last_visit),
+  "Prochaine échéance":b.status==="deposee"?exportDateValue(reminderDueAt(b).toISOString()):"",
+  "Report utilisé":b.reminder_snooze_used?"Oui":"Non",
+  "Reporté jusqu’au":exportDateValue(b.reminder_snoozed_until),
+  "Notes":b.notes||"",
+  "Créée le":exportDateValue(b.created_at)
+ }));
+}
+async function exportHistoryRows(){
+ const {data:hist,error}=await sb.from("history").select("*").order("at",{ascending:true});
+ if(error)throw error;
+ return (hist||[]).map(h=>{
+  const b=businesses.find(x=>x.id===h.business_id);
+  const u=profileById(h.user_id);
+  return {
+   "Commerce":b?.name||"",
+   "Action":h.label||"",
+   "Détails":h.details||"",
+   "Date":exportDateValue(h.at),
+   "Collaborateur":u?.name||"Utilisateur"
+  };
+ });
+}
+function downloadBlob(blob,filename){
+ const a=document.createElement("a");
+ a.href=URL.createObjectURL(blob);
+ a.download=filename;
+ document.body.appendChild(a);
+ a.click();
+ a.remove();
+ setTimeout(()=>URL.revokeObjectURL(a.href),1000);
+}
+
+exportExcelBtn.onclick=async()=>{
+ try{
+  if(!window.XLSX)throw new Error("Le module Excel n’est pas disponible.");
+  exportExcelBtn.disabled=true;
+  const rows=exportBusinessRows();
+  const histRows=await exportHistoryRows();
+  const userRows=profiles.map(p=>({
+   "Nom":p.name||"",
+   "Rôle":p.role==="admin"?"Administrateur":"Collaborateur",
+   "Nombre de boîtes":businesses.filter(b=>b.owner_id===p.id).length
+  }));
+  const wb=XLSX.utils.book_new();
+  const wsBusinesses=XLSX.utils.json_to_sheet(rows);
+  const wsHistory=XLSX.utils.json_to_sheet(histRows);
+  const wsUsers=XLSX.utils.json_to_sheet(userRows);
+  wsBusinesses["!cols"]=[{wch:28},{wch:38},{wch:20},{wch:18},{wch:24},{wch:20},{wch:22},{wch:22},{wch:14},{wch:22},{wch:36},{wch:22}];
+  wsHistory["!cols"]=[{wch:28},{wch:24},{wch:45},{wch:22},{wch:24}];
+  wsUsers["!cols"]=[{wch:26},{wch:18},{wch:18}];
+  XLSX.utils.book_append_sheet(wb,wsBusinesses,"Boîtes");
+  XLSX.utils.book_append_sheet(wb,wsHistory,"Historique");
+  XLSX.utils.book_append_sheet(wb,wsUsers,"Collaborateurs");
+  XLSX.writeFile(wb,`suivi-boites-${new Date().toISOString().slice(0,10)}.xlsx`);
+ }catch(e){
+  console.error(e);
+  alert(e.message||"Export Excel impossible.");
+ }finally{exportExcelBtn.disabled=false}
+}
+
+exportSheetsBtn.onclick=()=>{
+ try{
+  if(!window.XLSX)throw new Error("Le module CSV n’est pas disponible.");
+  const ws=XLSX.utils.json_to_sheet(exportBusinessRows());
+  const csv=XLSX.utils.sheet_to_csv(ws,{FS:","});
+  const blob=new Blob(["\ufeff"+csv],{type:"text/csv;charset=utf-8"});
+  downloadBlob(blob,`suivi-boites-google-sheets-${new Date().toISOString().slice(0,10)}.csv`);
+ }catch(e){
+  console.error(e);
+  alert(e.message||"Export Google Sheets impossible.");
+ }
+}
+
 exportBtn.onclick=async()=>{
  const {data:hist}=await sb.from("history").select("*");
  const payload={exportedAt:new Date().toISOString(),profiles,businesses,history:hist||[],settings:settingsRow};
- const blob=new Blob([JSON.stringify(payload,null,2)],{type:"application/json"}),a=document.createElement("a");
- a.href=URL.createObjectURL(blob);a.download=`suivi-boites-${new Date().toISOString().slice(0,10)}.json`;a.click();URL.revokeObjectURL(a.href);
+ const blob=new Blob([JSON.stringify(payload,null,2)],{type:"application/json"});
+ downloadBlob(blob,`suivi-boites-${new Date().toISOString().slice(0,10)}.json`);
 }
 
 function importNorm(v=""){
@@ -737,10 +866,10 @@ importFile.onchange=()=>importDataFile(importFile.files?.[0]);
 function showHome(){homeView.classList.remove("hidden");settingsView.classList.add("hidden");navHome.classList.add("active");navSettings.classList.remove("active")}
 function showSettings(){homeView.classList.add("hidden");settingsView.classList.remove("hidden");navHome.classList.remove("active");navSettings.classList.add("active");renderSettings()}
 navHome.onclick=showHome;navSettings.onclick=showSettings;userChip.onclick=showSettings;backHome.onclick=showHome;logoutBtn.onclick=logout;
-navAlerts.onclick=()=>{showHome();ownerFilter.value="mine";statusFilter.value="";render();alert(`${businesses.filter(b=>b.owner_id===currentUser.id&&due(b)).length} de tes fiches sont à revoir.`)}
+navAlerts.onclick=()=>{showHome();ownerFilter.value="all";statusFilter.value="";render();alert(`${businesses.filter(due).length} fiche${businesses.filter(due).length>1?"s":""} à revoir dans l’équipe.`)}
 navHistory.onclick=async()=>{
  const {data:hist}=await sb.from("history").select("*").order("at",{ascending:false}).limit(200);
- const items=(hist||[]).filter(h=>{const b=businesses.find(x=>x.id===h.business_id);return isAdmin()||(b&&b.owner_id===currentUser.id)});
+ const items=(hist||[]);
  historyTitle.textContent="Historique général";
  historyList.innerHTML=items.length?items.map(h=>{const b=businesses.find(x=>x.id===h.business_id);return `<div class="user-row"><div><strong>${esc(b?b.name:"?")} · ${esc(h.label)}</strong><small>${fmt(h.at)} · ${esc(profileById(h.user_id)?.name||"Utilisateur")}</small></div></div>`}).join(""):`<div class="empty">Aucun historique.</div>`;
  historyDialog.showModal();
@@ -824,7 +953,7 @@ async function getNotifRegistration(){
  if(notifRegistration)return notifRegistration;
  try{
   const existing=await navigator.serviceWorker.getRegistration("./");
-  notifRegistration=existing||await navigator.serviceWorker.register("./sw.js").then(()=>navigator.serviceWorker.ready);
+  notifRegistration=existing||await navigator.serviceWorker.register("./sw.js?v=4").then(()=>navigator.serviceWorker.ready);
   return notifRegistration;
  }catch(e){console.error("Service worker:",e);return null}
 }
@@ -914,10 +1043,55 @@ getNotifRegistration();
 setInterval(()=>checkAndNotify(false),3600000);
 
 
+/* ===================== PRÉSENCE ÉQUIPE ===================== */
+async function updatePresence(){
+ if(!currentUser)return;
+ const nowIso=new Date().toISOString();
+ await sb.from("profiles").update({last_seen_at:nowIso}).eq("id",currentUser.id);
+ const p=profiles.find(x=>x.id===currentUser.id);if(p)p.last_seen_at=nowIso;
+}
+setInterval(()=>{if(document.visibilityState==="visible")updatePresence()},120000);
+document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="visible")updatePresence()});
+
 /* ===================== PWA / INSTALLATION ===================== */
+let deferredInstallPrompt=null;
+function isStandaloneApp(){
+ return window.matchMedia?.("(display-mode: standalone)")?.matches===true || window.navigator.standalone===true;
+}
+function isIOSDevice(){return /iphone|ipad|ipod/i.test(navigator.userAgent)}
+function updateInstallUI(){
+ if(typeof installPanel==="undefined"||typeof installBtn==="undefined")return;
+ if(isStandaloneApp()){installPanel.classList.add("hidden");return}
+ installPanel.classList.remove("hidden");
+ if(isIOSDevice()){
+  installStatus.textContent="Sur iPhone : ouvre ce site dans Safari, touche Partager puis ‘Sur l’écran d’accueil’.";
+  installBtn.textContent="Voir comment installer";
+ }else if(deferredInstallPrompt){
+  installStatus.textContent="L’application peut être installée sur ce téléphone.";
+  installBtn.textContent="Installer l’application";
+ }else{
+  installStatus.textContent="Si l’installation n’est pas proposée automatiquement, ouvre le menu du navigateur puis choisis ‘Installer l’application’ ou ‘Ajouter à l’écran d’accueil’.";
+  installBtn.textContent="Comment installer";
+ }
+}
+window.addEventListener("beforeinstallprompt",e=>{
+ e.preventDefault();deferredInstallPrompt=e;updateInstallUI();
+});
+window.addEventListener("appinstalled",()=>{deferredInstallPrompt=null;updateInstallUI()});
+installBtn.onclick=async()=>{
+ if(isIOSDevice())return alert("Sur iPhone : Safari → Partager → Sur l’écran d’accueil → Ajouter.");
+ if(deferredInstallPrompt){
+  deferredInstallPrompt.prompt();
+  await deferredInstallPrompt.userChoice;
+  deferredInstallPrompt=null;updateInstallUI();
+  return;
+ }
+ alert("Ouvre le menu du navigateur puis choisis ‘Installer l’application’ ou ‘Ajouter à l’écran d’accueil’.");
+};
+
 if("serviceWorker" in navigator){
  window.addEventListener("load",()=>{
-  navigator.serviceWorker.register("./sw.js").catch(err=>console.error("PWA service worker:",err));
+  navigator.serviceWorker.register("./sw.js?v=4").catch(err=>console.error("PWA service worker:",err));
  });
 }
 
