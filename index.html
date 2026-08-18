@@ -181,10 +181,10 @@ dialog{width:min(92vw,630px);border:0;border-radius:25px;padding:0;background:va
 
   <article class="settings-card">
     <h3>Sauvegarde & import</h3>
-    <p>Exporter les données en Excel, en CSV compatible Google Sheets, ou en JSON. L’import accepte Excel, CSV et JSON. Les doublons sont ignorés automatiquement.</p>
+    <p>Exporter les données en Excel ou Google Sheets dans un format plus lisible sur téléphone, avec une vue synthétique et un onglet de détails complets. L’import accepte Excel, CSV et JSON. Les doublons sont ignorés automatiquement.</p>
     <div class="row" style="justify-content:flex-start;flex-wrap:wrap">
       <button id="exportExcelBtn" class="ghost-btn" type="button">Exporter Excel</button>
-      <button id="exportSheetsBtn" class="ghost-btn" type="button">Exporter Google Sheets (CSV)</button>
+      <button id="exportSheetsBtn" class="ghost-btn" type="button">Exporter Google Sheets</button>
       <button id="exportBtn" class="ghost-btn" type="button">Exporter JSON</button>
       <button id="importBtn" class="ghost-btn" type="button">Importer Excel / CSV / JSON</button>
       <input id="importFile" type="file" accept=".xlsx,.xls,.csv,.json" class="hidden">
@@ -697,6 +697,24 @@ function exportBusinessRows(){
   "Créée le":exportDateValue(b.created_at)
  }));
 }
+
+function exportBusinessMobileRows(){
+ return businesses.map(b=>({
+  "Commerce":b.name||"",
+  "Ville":inferredCity(b)||"",
+  "Responsable":profileById(b.owner_id)?.name||"Non attribuée",
+  "Statut":labels[b.status]||b.status||"",
+  "Échéance":b.status==="deposee"?exportDateValue(reminderDueAt(b).toISOString()):""
+ }));
+}
+
+function optimizeSheetForPhone(ws, widths){
+ ws["!cols"]=widths.map(w=>({wch:w}));
+ const range=XLSX.utils.decode_range(ws["!ref"]||"A1:A1");
+ ws["!autofilter"]={ref:XLSX.utils.encode_range({s:{r:0,c:range.s.c},e:{r:range.e.r,c:range.e.c}})};
+ ws["!rows"]=Array.from({length:Math.max(range.e.r+1,1)},(_,i)=>({hpt:i===0?26:22}));
+ return ws;
+}
 async function exportHistoryRows(){
  const {data:hist,error}=await sb.from("history").select("*").order("at",{ascending:true});
  if(error)throw error;
@@ -726,6 +744,8 @@ exportExcelBtn.onclick=async()=>{
  try{
   if(!window.XLSX)throw new Error("Le module Excel n’est pas disponible.");
   exportExcelBtn.disabled=true;
+
+  const mobileRows=exportBusinessMobileRows();
   const rows=exportBusinessRows();
   const histRows=await exportHistoryRows();
   const userRows=profiles.map(p=>({
@@ -733,16 +753,34 @@ exportExcelBtn.onclick=async()=>{
    "Rôle":p.role==="admin"?"Administrateur":"Collaborateur",
    "Nombre de boîtes":businesses.filter(b=>b.owner_id===p.id).length
   }));
+
   const wb=XLSX.utils.book_new();
-  const wsBusinesses=XLSX.utils.json_to_sheet(rows);
-  const wsHistory=XLSX.utils.json_to_sheet(histRows);
-  const wsUsers=XLSX.utils.json_to_sheet(userRows);
-  wsBusinesses["!cols"]=[{wch:28},{wch:38},{wch:20},{wch:18},{wch:24},{wch:20},{wch:22},{wch:22},{wch:14},{wch:22},{wch:36},{wch:22}];
-  wsHistory["!cols"]=[{wch:28},{wch:24},{wch:45},{wch:22},{wch:24}];
-  wsUsers["!cols"]=[{wch:26},{wch:18},{wch:18}];
-  XLSX.utils.book_append_sheet(wb,wsBusinesses,"Boîtes");
+
+  // Premier onglet volontairement compact pour smartphone.
+  const wsMobile=optimizeSheetForPhone(
+   XLSX.utils.json_to_sheet(mobileRows),
+   [26,18,20,17,19]
+  );
+
+  // Toutes les informations restent disponibles dans Détails.
+  const wsDetails=optimizeSheetForPhone(
+   XLSX.utils.json_to_sheet(rows),
+   [26,34,18,17,22,18,20,20,14,20,32,20]
+  );
+  const wsHistory=optimizeSheetForPhone(
+   XLSX.utils.json_to_sheet(histRows),
+   [26,22,34,20,22]
+  );
+  const wsUsers=optimizeSheetForPhone(
+   XLSX.utils.json_to_sheet(userRows),
+   [25,18,18]
+  );
+
+  XLSX.utils.book_append_sheet(wb,wsMobile,"Boîtes");
+  XLSX.utils.book_append_sheet(wb,wsDetails,"Détails");
   XLSX.utils.book_append_sheet(wb,wsHistory,"Historique");
   XLSX.utils.book_append_sheet(wb,wsUsers,"Collaborateurs");
+
   XLSX.writeFile(wb,`suivi-boites-${new Date().toISOString().slice(0,10)}.xlsx`);
  }catch(e){
   console.error(e);
@@ -750,16 +788,50 @@ exportExcelBtn.onclick=async()=>{
  }finally{exportExcelBtn.disabled=false}
 }
 
-exportSheetsBtn.onclick=()=>{
+exportSheetsBtn.onclick=async()=>{
  try{
-  if(!window.XLSX)throw new Error("Le module CSV n’est pas disponible.");
-  const ws=XLSX.utils.json_to_sheet(exportBusinessRows());
-  const csv=XLSX.utils.sheet_to_csv(ws,{FS:","});
-  const blob=new Blob(["\ufeff"+csv],{type:"text/csv;charset=utf-8"});
-  downloadBlob(blob,`suivi-boites-google-sheets-${new Date().toISOString().slice(0,10)}.csv`);
+  if(!window.XLSX)throw new Error("Le module Google Sheets n’est pas disponible.");
+  exportSheetsBtn.disabled=true;
+
+  const mobileRows=exportBusinessMobileRows();
+  const rows=exportBusinessRows();
+  const histRows=await exportHistoryRows();
+  const userRows=profiles.map(p=>({
+   "Nom":p.name||"",
+   "Rôle":p.role==="admin"?"Administrateur":"Collaborateur",
+   "Nombre de boîtes":businesses.filter(b=>b.owner_id===p.id).length
+  }));
+
+  const wb=XLSX.utils.book_new();
+
+  const wsMobile=optimizeSheetForPhone(
+   XLSX.utils.json_to_sheet(mobileRows),
+   [26,18,20,17,19]
+  );
+  const wsDetails=optimizeSheetForPhone(
+   XLSX.utils.json_to_sheet(rows),
+   [26,34,18,17,22,18,20,20,14,20,32,20]
+  );
+  const wsHistory=optimizeSheetForPhone(
+   XLSX.utils.json_to_sheet(histRows),
+   [26,22,34,20,22]
+  );
+  const wsUsers=optimizeSheetForPhone(
+   XLSX.utils.json_to_sheet(userRows),
+   [25,18,18]
+  );
+
+  XLSX.utils.book_append_sheet(wb,wsMobile,"Boîtes");
+  XLSX.utils.book_append_sheet(wb,wsDetails,"Détails");
+  XLSX.utils.book_append_sheet(wb,wsHistory,"Historique");
+  XLSX.utils.book_append_sheet(wb,wsUsers,"Collaborateurs");
+
+  XLSX.writeFile(wb,`suivi-boites-google-sheets-${new Date().toISOString().slice(0,10)}.xlsx`);
  }catch(e){
   console.error(e);
   alert(e.message||"Export Google Sheets impossible.");
+ }finally{
+  exportSheetsBtn.disabled=false;
  }
 }
 
